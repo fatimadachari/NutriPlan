@@ -5,6 +5,7 @@ using NutriPlan.Application.DTOs.Meal;
 using NutriPlan.Application.DTOs.MealFood;
 using NutriPlan.Application.Interfaces;
 using NutriPlan.Domain.Entities;
+using NutriPlan.Infrastructure.Services;
 
 namespace NutriPlan.API.Controllers;
 
@@ -15,11 +16,13 @@ public class DietsController : ControllerBase
 {
     private readonly IDietRepository _dietRepository;
     private readonly IPatientRepository _patientRepository;
+    private readonly IPdfService _pdfService;
 
-    public DietsController(IDietRepository dietRepository, IPatientRepository patientRepository)
+    public DietsController(IDietRepository dietRepository, IPatientRepository patientRepository, IPdfService pdfService)
     {
         _dietRepository = dietRepository;
         _patientRepository = patientRepository;
+        _pdfService = pdfService;
     }
 
     [HttpGet("patient/{patientId}")]
@@ -106,5 +109,24 @@ public class DietsController : ControllerBase
                 }).ToList()
             }).ToList()
         };
+    }
+
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GeneratePdf(Guid id)
+    {
+        try
+        {
+            var diet = await _dietRepository.GetByIdAsync(id);
+            if (diet == null)
+                return NotFound(new { message = "Dieta não encontrada" });
+
+            var pdfBytes = await _pdfService.GenerateDietPdfAsync(id);
+
+            return File(pdfBytes, "application/pdf", $"dieta-{id}.pdf");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

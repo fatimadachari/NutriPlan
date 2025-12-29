@@ -9,14 +9,15 @@ using NutriPlan.Infrastructure.Data;
 using NutriPlan.Infrastructure.Identity;
 using NutriPlan.Infrastructure.Repositories;
 using NutriPlan.Infrastructure.Services;
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -28,7 +29,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// Configurar JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey não configurada");
 
@@ -51,7 +51,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Registrar Repositórios e Services
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IFoodRepository, FoodRepository>();
 builder.Services.AddScoped<INutritionistRepository, NutritionistRepository>();
@@ -62,8 +61,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IPdfService, PdfService>();
 
-// Configurar Swagger com JWT
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -94,7 +93,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Executar o DataSeeder
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
