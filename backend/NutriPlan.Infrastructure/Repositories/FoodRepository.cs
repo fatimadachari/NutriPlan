@@ -14,19 +14,16 @@ public class FoodRepository : IFoodRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Food>> GetAllAsync()
+    public async Task<IEnumerable<Food>> GetAllAsync(string? search = null)
     {
-        return await _context.Foods
-            .AsNoTracking()
-            .OrderBy(f => f.Name)
-            .ToListAsync();
-    }
+        var query = _context.Foods.AsNoTracking();
 
-    public async Task<IEnumerable<Food>> SearchByNameAsync(string name)
-    {
-        return await _context.Foods
-            .AsNoTracking()
-            .Where(f => f.Name.Contains(name))
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(f => f.Name.Contains(search));
+        }
+
+        return await query
             .OrderBy(f => f.Name)
             .ToListAsync();
     }

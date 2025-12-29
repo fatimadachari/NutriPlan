@@ -16,6 +16,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     public DbSet<Diet> Diets { get; set; }
     public DbSet<Meal> Meals { get; set; }
     public DbSet<MealFood> MealFoods { get; set; }
+    public DbSet<WeightHistory> WeightHistories { get; set; }
+    public DbSet<BodyMeasurement> BodyMeasurements { get; set; }
 
     // Novas tabelas
     public DbSet<Allergy> Allergies { get; set; }

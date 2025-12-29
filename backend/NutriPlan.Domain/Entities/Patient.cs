@@ -15,10 +15,11 @@ public class Patient
     public Nutritionist Nutritionist { get; private set; }
 
     public ICollection<Diet> Diets { get; private set; }
-
     public ICollection<PatientAllergy> PatientAllergies { get; private set; }
     public ICollection<PatientHealthCondition> PatientHealthConditions { get; private set; }
     public ICollection<PatientDietaryPreference> PatientDietaryPreferences { get; private set; }
+    public ICollection<WeightHistory> WeightHistories { get; private set; }
+    public ICollection<BodyMeasurement> BodyMeasurements { get; private set; }
 
     public Patient(string name, string email, int age, decimal weight, decimal height, string goal, Guid nutritionistId)
     {
@@ -35,6 +36,8 @@ public class Patient
         PatientAllergies = new List<PatientAllergy>();
         PatientHealthConditions = new List<PatientHealthCondition>();
         PatientDietaryPreferences = new List<PatientDietaryPreference>();
+        WeightHistories = new List<WeightHistory>();
+        BodyMeasurements = new List<BodyMeasurement>();
     }
 
     private Patient()
@@ -42,5 +45,7 @@ public class Patient
         PatientAllergies = new List<PatientAllergy>();
         PatientHealthConditions = new List<PatientHealthCondition>();
         PatientDietaryPreferences = new List<PatientDietaryPreference>();
+        WeightHistories = new List<WeightHistory>();
+        BodyMeasurements = new List<BodyMeasurement>();
     }
 }

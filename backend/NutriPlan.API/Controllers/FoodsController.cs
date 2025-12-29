@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NutriPlan.Application.DTOs.Food;
 using NutriPlan.Application.Interfaces;
 
 namespace NutriPlan.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class FoodsController : ControllerBase
@@ -18,11 +16,9 @@ public class FoodsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<FoodResponseDto>>> GetAll([FromQuery] string? search)
+    public async Task<ActionResult<IEnumerable<FoodResponseDto>>> GetAll([FromQuery] string? search = null)
     {
-        var foods = string.IsNullOrWhiteSpace(search)
-            ? await _foodRepository.GetAllAsync()
-            : await _foodRepository.SearchByNameAsync(search);
+        var foods = await _foodRepository.GetAllAsync(search);
 
         var response = foods.Select(f => new FoodResponseDto
         {
@@ -32,29 +28,17 @@ public class FoodsController : ControllerBase
             Protein = f.Protein,
             Carbs = f.Carbs,
             Fat = f.Fat,
-            ServingSize = f.ServingSize
+            ServingSize = f.ServingSize,
+            ContainsGluten = f.ContainsGluten,
+            ContainsLactose = f.ContainsLactose,
+            ContainsSoy = f.ContainsSoy,
+            ContainsNuts = f.ContainsNuts,
+            ContainsEggs = f.ContainsEggs,
+            ContainsFish = f.ContainsFish,
+            ContainsShellfish = f.ContainsShellfish,
+            SugarContent = f.SugarContent,
+            SodiumContent = f.SodiumContent
         });
-
-        return Ok(response);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<FoodResponseDto>> GetById(Guid id)
-    {
-        var food = await _foodRepository.GetByIdAsync(id);
-        if (food == null)
-            return NotFound(new { message = "Alimento não encontrado" });
-
-        var response = new FoodResponseDto
-        {
-            Id = food.Id,
-            Name = food.Name,
-            Calories = food.Calories,
-            Protein = food.Protein,
-            Carbs = food.Carbs,
-            Fat = food.Fat,
-            ServingSize = food.ServingSize
-        };
 
         return Ok(response);
     }

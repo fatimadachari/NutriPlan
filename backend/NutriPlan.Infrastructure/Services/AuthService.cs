@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NutriPlan.Application.DTOs.Auth;
 using NutriPlan.Application.Interfaces;
+using NutriPlan.Domain.Entities;
+using NutriPlan.Infrastructure.Data;
 using NutriPlan.Infrastructure.Identity;
 
 namespace NutriPlan.Infrastructure.Services;
@@ -14,11 +16,13 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly AppDbContext _context;
 
-    public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, AppDbContext context)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _context = context;
     }
 
     public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
@@ -40,6 +44,13 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
             return null;
 
+        // Criar Nutritionist correspondente
+        var nutritionist = new Nutritionist(dto.FullName, dto.Email, dto.CRN);
+        typeof(Nutritionist).GetProperty("Id")!.SetValue(nutritionist, user.Id);
+
+        await _context.Nutritionists.AddAsync(nutritionist);
+        await _context.SaveChangesAsync();
+
         return await GenerateTokenAsync(user);
     }
 
@@ -56,7 +67,7 @@ public class AuthService : IAuthService
         return await GenerateTokenAsync(user);
     }
 
-    private async Task<AuthResponseDto> GenerateTokenAsync(ApplicationUser user)
+    private Task<AuthResponseDto> GenerateTokenAsync(ApplicationUser user)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey não configurada");
@@ -83,13 +94,13 @@ public class AuthService : IAuthService
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return new AuthResponseDto
+        return Task.FromResult(new AuthResponseDto
         {
             Token = tokenString,
             Email = user.Email ?? string.Empty,
             FullName = user.FullName,
             UserId = user.Id,
             ExpiresAt = expiresAt
-        };
+        });
     }
 }

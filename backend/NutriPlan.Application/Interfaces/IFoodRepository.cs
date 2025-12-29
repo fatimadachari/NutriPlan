@@ -4,7 +4,6 @@ namespace NutriPlan.Application.Interfaces;
 
 public interface IFoodRepository
 {
-    Task<IEnumerable<Food>> GetAllAsync();
-    Task<IEnumerable<Food>> SearchByNameAsync(string name);
+    Task<IEnumerable<Food>> GetAllAsync(string? search = null);
     Task<Food?> GetByIdAsync(Guid id);
 }
