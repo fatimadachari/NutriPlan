@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutriPlan.Domain", "NutriPlan.Domain\NutriPlan.Domain.csproj", "{76E39767-7B5B-485E-A057-E531FEC6AE7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutriPlan.Application", "NutriPlan.Application\NutriPlan.Application.csproj", "{6ED86C3D-3B44-4C8C-9E91-31A0AB39C79F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutriPlan.Infrastructure", "NutriPlan.Infrastructure\NutriPlan.Infrastructure.csproj", "{4C6D9DEA-D933-404E-A46C-4A60CB65A316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NutriPlan.API", "NutriPlan.API\NutriPlan.API.csproj", "{07F8DC3B-6E4E-4481-84AF-40859A9D29DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76E39767-7B5B-485E-A057-E531FEC6AE7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76E39767-7B5B-485E-A057-E531FEC6AE7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76E39767-7B5B-485E-A057-E531FEC6AE7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76E39767-7B5B-485E-A057-E531FEC6AE7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ED86C3D-3B44-4C8C-9E91-31A0AB39C79F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ED86C3D-3B44-4C8C-9E91-31A0AB39C79F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ED86C3D-3B44-4C8C-9E91-31A0AB39C79F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ED86C3D-3B44-4C8C-9E91-31A0AB39C79F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C6D9DEA-D933-404E-A46C-4A60CB65A316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6D9DEA-D933-404E-A46C-4A60CB65A316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6D9DEA-D933-404E-A46C-4A60CB65A316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6D9DEA-D933-404E-A46C-4A60CB65A316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07F8DC3B-6E4E-4481-84AF-40859A9D29DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F8DC3B-6E4E-4481-84AF-40859A9D29DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F8DC3B-6E4E-4481-84AF-40859A9D29DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F8DC3B-6E4E-4481-84AF-40859A9D29DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
