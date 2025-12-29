@@ -105,3 +105,32 @@ export interface DietaryPreference {
   id: string;
   name: string;
 }
+
+export interface WeightHistory {
+  id: string;
+  patientId: string;
+  weight: number;
+  bmi: number;
+  measurementDate: string;
+  notes?: string;
+}
+
+export interface BodyMeasurement {
+  id: string;
+  patientId: string;
+  measurementDate: string;
+  neck?: number;
+  chest?: number;
+  waist?: number;
+  abdomen?: number;
+  hip?: number;
+  rightArm?: number;
+  leftArm?: number;
+  rightThigh?: number;
+  leftThigh?: number;
+  rightCalf?: number;
+  leftCalf?: number;
+  bodyFatPercentage?: number;
+  muscleMassPercentage?: number;
+  notes?: string;
+}

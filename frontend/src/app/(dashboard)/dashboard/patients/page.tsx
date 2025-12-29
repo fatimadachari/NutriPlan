@@ -5,7 +5,7 @@ import { patientsApi } from '@/lib/api/patients';
 import { Patient } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Scale } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -156,6 +156,14 @@ export default function PatientsPage() {
                           Dietas
                         </Button>
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/patients/${patient.id}/measurements`)}
+                        >
+                          <Scale size={16} className="mr-1" />
+                          Medições
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(patient)}
@@ -171,7 +179,7 @@ export default function PatientsPage() {
                         </Button>
                       </div>
                     </TableCell>
-                    
+
                   </TableRow>
                 ))}
               </TableBody>
