@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NutriPlan.Application.DTOs.Food;
 using NutriPlan.Application.Interfaces;
 
 namespace NutriPlan.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class FoodsController : ControllerBase
