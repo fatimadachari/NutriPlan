@@ -12,6 +12,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var seeder = new DataSeeder(context);
+    await seeder.SeedAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
