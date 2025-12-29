@@ -12,6 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Registrar Repositórios
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IFoodRepository, FoodRepository>();
+builder.Services.AddScoped<INutritionistRepository, NutritionistRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

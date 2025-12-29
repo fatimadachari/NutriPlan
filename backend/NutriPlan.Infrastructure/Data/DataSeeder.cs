@@ -13,13 +13,26 @@ public class DataSeeder
 
     public async Task SeedAsync()
     {
-        if (_context.Foods.Any())
-            return;
+        // Seed Nutritionist
+        if (!_context.Nutritionists.Any())
+        {
+            var nutritionist = new Nutritionist(
+                "Dr. Ana Paula Santos",
+                "ana.santos@nutriplan.com",
+                "CRN-12345"
+            );
 
-        var foods = GetTacoFoods();
+            await _context.Nutritionists.AddAsync(nutritionist);
+            await _context.SaveChangesAsync();
+        }
 
-        await _context.Foods.AddRangeAsync(foods);
-        await _context.SaveChangesAsync();
+        // Seed Foods
+        if (!_context.Foods.Any())
+        {
+            var foods = GetTacoFoods();
+            await _context.Foods.AddRangeAsync(foods);
+            await _context.SaveChangesAsync();
+        }
     }
 
     private List<Food> GetTacoFoods()
