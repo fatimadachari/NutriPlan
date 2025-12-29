@@ -17,10 +17,29 @@ public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid
     public DbSet<Meal> Meals { get; set; }
     public DbSet<MealFood> MealFoods { get; set; }
 
+    // Novas tabelas
+    public DbSet<Allergy> Allergies { get; set; }
+    public DbSet<HealthCondition> HealthConditions { get; set; }
+    public DbSet<DietaryPreference> DietaryPreferences { get; set; }
+    public DbSet<PatientAllergy> PatientAllergies { get; set; }
+    public DbSet<PatientHealthCondition> PatientHealthConditions { get; set; }
+    public DbSet<PatientDietaryPreference> PatientDietaryPreferences { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Aplicar todas as configurações do assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Configurar relacionamentos N:N
+        modelBuilder.Entity<PatientAllergy>()
+            .HasKey(pa => new { pa.PatientId, pa.AllergyId });
+
+        modelBuilder.Entity<PatientHealthCondition>()
+            .HasKey(phc => new { phc.PatientId, phc.HealthConditionId });
+
+        modelBuilder.Entity<PatientDietaryPreference>()
+            .HasKey(pdp => new { pdp.PatientId, pdp.DietaryPreferenceId });
     }
 }

@@ -22,18 +22,7 @@ public class PatientsController : ControllerBase
     public async Task<ActionResult<IEnumerable<PatientResponseDto>>> GetAll()
     {
         var patients = await _patientRepository.GetAllAsync();
-        var response = patients.Select(p => new PatientResponseDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Email = p.Email,
-            Age = p.Age,
-            Weight = p.Weight,
-            Height = p.Height,
-            Goal = p.Goal,
-            NutritionistId = p.NutritionistId,
-            CreatedAt = p.CreatedAt
-        });
+        var response = patients.Select(p => MapToPatientResponse(p));
 
         return Ok(response);
     }
@@ -45,19 +34,7 @@ public class PatientsController : ControllerBase
         if (patient == null)
             return NotFound(new { message = "Paciente não encontrado" });
 
-        var response = new PatientResponseDto
-        {
-            Id = patient.Id,
-            Name = patient.Name,
-            Email = patient.Email,
-            Age = patient.Age,
-            Weight = patient.Weight,
-            Height = patient.Height,
-            Goal = patient.Goal,
-            NutritionistId = patient.NutritionistId,
-            CreatedAt = patient.CreatedAt
-        };
-
+        var response = MapToPatientResponse(patient);
         return Ok(response);
     }
 
@@ -76,19 +53,7 @@ public class PatientsController : ControllerBase
 
         var created = await _patientRepository.CreateAsync(patient);
 
-        var response = new PatientResponseDto
-        {
-            Id = created.Id,
-            Name = created.Name,
-            Email = created.Email,
-            Age = created.Age,
-            Weight = created.Weight,
-            Height = created.Height,
-            Goal = created.Goal,
-            NutritionistId = created.NutritionistId,
-            CreatedAt = created.CreatedAt
-        };
-
+        var response = MapToPatientResponse(created);
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
@@ -113,20 +78,25 @@ public class PatientsController : ControllerBase
 
         await _patientRepository.UpdateAsync(updated);
 
-        var response = new PatientResponseDto
-        {
-            Id = updated.Id,
-            Name = updated.Name,
-            Email = updated.Email,
-            Age = updated.Age,
-            Weight = updated.Weight,
-            Height = updated.Height,
-            Goal = updated.Goal,
-            NutritionistId = updated.NutritionistId,
-            CreatedAt = patient.CreatedAt
-        };
-
+        var response = MapToPatientResponse(updated);
         return Ok(response);
+    }
+
+    [HttpPut("{id}/restrictions")]
+    public async Task<ActionResult> UpdateRestrictions(Guid id, [FromBody] UpdatePatientRestrictionsDto dto)
+    {
+        var patient = await _patientRepository.GetByIdAsync(id);
+        if (patient == null)
+            return NotFound(new { message = "Paciente não encontrado" });
+
+        await _patientRepository.UpdateRestrictionsAsync(
+            id,
+            dto.AllergyIds,
+            dto.HealthConditionIds,
+            dto.DietaryPreferenceIds
+        );
+
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
@@ -138,5 +108,38 @@ public class PatientsController : ControllerBase
 
         await _patientRepository.DeleteAsync(id);
         return NoContent();
+    }
+
+    private PatientResponseDto MapToPatientResponse(Patient patient)
+    {
+        return new PatientResponseDto
+        {
+            Id = patient.Id,
+            Name = patient.Name,
+            Email = patient.Email,
+            Age = patient.Age,
+            Weight = patient.Weight,
+            Height = patient.Height,
+            Goal = patient.Goal,
+            NutritionistId = patient.NutritionistId,
+            CreatedAt = patient.CreatedAt,
+            Allergies = patient.PatientAllergies.Select(pa => new AllergyDto
+            {
+                Id = pa.Allergy.Id,
+                Name = pa.Allergy.Name,
+                Category = pa.Allergy.Category
+            }).ToList(),
+            HealthConditions = patient.PatientHealthConditions.Select(phc => new HealthConditionDto
+            {
+                Id = phc.HealthCondition.Id,
+                Name = phc.HealthCondition.Name,
+                Description = phc.HealthCondition.Description
+            }).ToList(),
+            DietaryPreferences = patient.PatientDietaryPreferences.Select(pdp => new DietaryPreferenceDto
+            {
+                Id = pdp.DietaryPreference.Id,
+                Name = pdp.DietaryPreference.Name
+            }).ToList()
+        };
     }
 }

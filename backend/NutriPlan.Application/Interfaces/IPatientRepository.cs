@@ -9,4 +9,5 @@ public interface IPatientRepository
     Task<Patient> CreateAsync(Patient patient);
     Task<Patient> UpdateAsync(Patient patient);
     Task DeleteAsync(Guid id);
+    Task UpdateRestrictionsAsync(Guid patientId, List<Guid> allergyIds, List<Guid> healthConditionIds, List<Guid> dietaryPreferenceIds);
 }
