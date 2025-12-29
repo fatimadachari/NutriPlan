@@ -1,10 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using NutriPlan.Application.Interfaces;
 using NutriPlan.Infrastructure.Data;
+using NutriPlan.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Registrar Repositórios
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+builder.Services.AddScoped<IFoodRepository, FoodRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -12,6 +19,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Executar o DataSeeder
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
