@@ -14,10 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import PatientDialog from '@/components/patients/PatientDialog';
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
     loadPatients();
@@ -45,6 +48,20 @@ export default function PatientsPage() {
     }
   };
 
+  const handleEdit = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setDialogOpen(true);
+  };
+
+  const handleNew = () => {
+    setSelectedPatient(null);
+    setDialogOpen(true);
+  };
+
+  const handleSuccess = () => {
+    loadPatients();
+  };
+
   if (loading) {
     return <div>Carregando...</div>;
   }
@@ -56,7 +73,7 @@ export default function PatientsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
           <p className="text-gray-600 mt-1">Gerencie seus pacientes</p>
         </div>
-        <Button>
+        <Button onClick={handleNew}>
           <Plus className="mr-2" size={20} />
           Novo Paciente
         </Button>
@@ -69,8 +86,8 @@ export default function PatientsPage() {
         <CardContent>
           {patients.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Nenhum paciente cadastrado ainda.</p>
-              <Button className="mt-4">
+              <p className="text-gray-500 mb-4">Nenhum paciente cadastrado ainda.</p>
+              <Button onClick={handleNew}>
                 <Plus className="mr-2" size={20} />
                 Cadastrar Primeiro Paciente
               </Button>
@@ -99,7 +116,11 @@ export default function PatientsPage() {
                     <TableCell>{patient.goal}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(patient)}
+                        >
                           <Pencil size={16} />
                         </Button>
                         <Button
@@ -118,6 +139,13 @@ export default function PatientsPage() {
           )}
         </CardContent>
       </Card>
+
+      <PatientDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        patient={selectedPatient}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 }
