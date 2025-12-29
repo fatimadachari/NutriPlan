@@ -19,15 +19,18 @@ export interface RegisterDto {
 }
 
 export interface Patient {
-    id: string;
-    name: string;
-    email: string;
-    age: number;
-    weight: number;
-    height: number;
-    goal: string;
-    nutritionistId: string;
-    createdAt: string;
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  weight: number;
+  height: number;
+  goal: string;
+  nutritionistId: string;
+  createdAt: string;
+  allergies: Allergy[];
+  healthConditions: HealthCondition[];
+  dietaryPreferences: DietaryPreference[];
 }
 
 export interface Food {
@@ -73,4 +76,21 @@ export interface MealFood {
     mealId: string;
     foodId: string;
     foodName: string;
+}
+
+export interface Allergy {
+  id: string;
+  name: string;
+  category: string;
+}
+
+export interface HealthCondition {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface DietaryPreference {
+  id: string;
+  name: string;
 }

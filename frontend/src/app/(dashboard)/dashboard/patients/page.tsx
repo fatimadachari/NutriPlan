@@ -104,6 +104,7 @@ export default function PatientsPage() {
                   <TableHead>Peso</TableHead>
                   <TableHead>Altura</TableHead>
                   <TableHead>Objetivo</TableHead>
+                  <TableHead>Restrições</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -116,6 +117,34 @@ export default function PatientsPage() {
                     <TableCell>{patient.weight} kg</TableCell>
                     <TableCell>{patient.height} cm</TableCell>
                     <TableCell>{patient.goal}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {patient.allergies.map((allergy) => (
+                          <span
+                            key={allergy.id}
+                            className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded"
+                          >
+                            🚫 {allergy.name}
+                          </span>
+                        ))}
+                        {patient.healthConditions.map((condition) => (
+                          <span
+                            key={condition.id}
+                            className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded"
+                          >
+                            💊 {condition.name}
+                          </span>
+                        ))}
+                        {patient.dietaryPreferences.map((pref) => (
+                          <span
+                            key={pref.id}
+                            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
+                          >
+                            🥗 {pref.name}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         <Button
@@ -142,6 +171,7 @@ export default function PatientsPage() {
                         </Button>
                       </div>
                     </TableCell>
+                    
                   </TableRow>
                 ))}
               </TableBody>
