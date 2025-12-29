@@ -5,7 +5,7 @@ import { patientsApi } from '@/lib/api/patients';
 import { Patient } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -15,8 +15,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import PatientDialog from '@/components/patients/PatientDialog';
+import { useRouter } from 'next/navigation';
 
 export default function PatientsPage() {
+  const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -116,6 +118,14 @@ export default function PatientsPage() {
                     <TableCell>{patient.goal}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/patients/${patient.id}`)}
+                        >
+                          <FileText size={16} className="mr-1" />
+                          Dietas
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
