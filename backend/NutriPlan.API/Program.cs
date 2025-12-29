@@ -13,6 +13,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IFoodRepository, FoodRepository>();
 builder.Services.AddScoped<INutritionistRepository, NutritionistRepository>();
+builder.Services.AddScoped<IDietRepository, DietRepository>();
+builder.Services.AddScoped<IMealRepository, MealRepository>();
+builder.Services.AddScoped<IMealFoodRepository, MealFoodRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
