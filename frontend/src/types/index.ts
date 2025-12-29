@@ -34,13 +34,24 @@ export interface Patient {
 }
 
 export interface Food {
-    id: string;
-    name: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    servingSize: number;
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  servingSize: number;
+  // Alérgenos
+  containsGluten: boolean;
+  containsLactose: boolean;
+  containsSoy: boolean;
+  containsNuts: boolean;
+  containsEggs: boolean;
+  containsFish: boolean;
+  containsShellfish: boolean;
+  // Controle de saúde
+  sugarContent: number;
+  sodiumContent: number;
 }
 
 export interface Diet {
