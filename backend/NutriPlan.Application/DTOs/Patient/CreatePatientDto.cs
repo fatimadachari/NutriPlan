@@ -9,4 +9,8 @@ public class CreatePatientDto
     public decimal Height { get; set; }
     public string Goal { get; set; } = string.Empty;
     public Guid NutritionistId { get; set; }
+    public string Gender { get; set; } = "M"; // M ou F
+    public string ActivityLevel { get; set; } = "Sedentary";
+    public decimal? TargetWeight { get; set; }
+    public DateTime? TargetDate { get; set; }
 }

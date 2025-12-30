@@ -8,4 +8,8 @@ public class UpdatePatientDto
     public decimal Weight { get; set; }
     public decimal Height { get; set; }
     public string Goal { get; set; } = string.Empty;
+    public string Gender { get; set; } = "M";
+    public string ActivityLevel { get; set; } = "Sedentary";
+    public decimal? TargetWeight { get; set; }
+    public DateTime? TargetDate { get; set; }
 }

@@ -9,8 +9,16 @@ public class PatientResponseDto
     public decimal Weight { get; set; }
     public decimal Height { get; set; }
     public string Goal { get; set; } = string.Empty;
+    public string Gender { get; set; } = string.Empty;
+    public string ActivityLevel { get; set; } = string.Empty;
+    public decimal? TargetWeight { get; set; }
+    public DateTime? TargetDate { get; set; }
     public Guid NutritionistId { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Cálculos
+    public decimal BMR { get; set; } // Taxa Metabólica Basal
+    public decimal TDEE { get; set; } // Gasto Calórico Total Diário
 
     public List<AllergyDto> Allergies { get; set; } = new();
     public List<HealthConditionDto> HealthConditions { get; set; } = new();

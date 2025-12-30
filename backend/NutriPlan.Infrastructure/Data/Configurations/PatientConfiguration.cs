@@ -18,19 +18,42 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(p => p.Goal)
-            .IsRequired()
-            .HasMaxLength(100);
+        builder.Property(p => p.Age)
+            .IsRequired();
 
         builder.Property(p => p.Weight)
-            .HasPrecision(5, 2);
+            .HasPrecision(5, 2)
+            .IsRequired();
 
         builder.Property(p => p.Height)
+            .HasPrecision(5, 2)
+            .IsRequired();
+
+        builder.Property(p => p.Goal)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        builder.Property(p => p.Gender)
+            .IsRequired()
+            .HasMaxLength(1);
+
+        builder.Property(p => p.ActivityLevel)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(p => p.TargetWeight)
             .HasPrecision(5, 2);
 
-        builder.HasMany(p => p.Diets)
-            .WithOne(d => d.Patient)
-            .HasForeignKey(d => d.PatientId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(p => p.TargetDate);
+
+        builder.Property(p => p.CreatedAt)
+            .IsRequired();
+
+        builder.HasOne(p => p.Nutritionist)
+            .WithMany(n => n.Patients)
+            .HasForeignKey(p => p.NutritionistId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(p => p.Email);
     }
 }

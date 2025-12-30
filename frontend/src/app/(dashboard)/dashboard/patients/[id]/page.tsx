@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { patientsApi } from '@/lib/api/patients';
 import { dietsApi } from '@/lib/api/diets';
-import { Patient, Diet } from '@/types';
+import { measurementsApi } from '@/lib/api/measurements';
+import { Patient, Diet, WeightHistory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, FileDown, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, FileDown, Edit, Trash2, Scale } from 'lucide-react';
+import MetabolicInfoCard from '@/components/patients/MetabolicInfoCard';
+import PatientDialog from '@/components/patients/PatientDialog';
 
 export default function PatientDietsPage() {
   const params = useParams();
@@ -16,8 +19,10 @@ export default function PatientDietsPage() {
 
   const [patient, setPatient] = useState<Patient | null>(null);
   const [diets, setDiets] = useState<Diet[]>([]);
+  const [weightHistory, setWeightHistory] = useState<WeightHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -25,12 +30,14 @@ export default function PatientDietsPage() {
 
   const loadData = async () => {
     try {
-      const [patientData, dietsData] = await Promise.all([
+      const [patientData, dietsData, weightData] = await Promise.all([
         patientsApi.getById(patientId),
         dietsApi.getByPatient(patientId),
+        measurementsApi.getWeightHistory(patientId),
       ]);
       setPatient(patientData);
       setDiets(dietsData);
+      setWeightHistory(weightData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -85,8 +92,11 @@ export default function PatientDietsPage() {
     return <div>Paciente não encontrado</div>;
   }
 
+  const latestWeight = weightHistory[0]?.weight;
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
@@ -101,14 +111,62 @@ export default function PatientDietsPage() {
             <p className="text-gray-600 mt-1">
               {patient.age} anos | {patient.weight}kg | {patient.height}cm | {patient.goal}
             </p>
+            {/* Badges de Restrições */}
+            {(patient.allergies.length > 0 || 
+              patient.healthConditions.length > 0 || 
+              patient.dietaryPreferences.length > 0) && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {patient.allergies.map((allergy) => (
+                  <span
+                    key={allergy.id}
+                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium"
+                  >
+                    🚫 {allergy.name}
+                  </span>
+                ))}
+                {patient.healthConditions.map((condition) => (
+                  <span
+                    key={condition.id}
+                    className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded font-medium"
+                  >
+                    💊 {condition.name}
+                  </span>
+                ))}
+                {patient.dietaryPreferences.map((pref) => (
+                  <span
+                    key={pref.id}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded font-medium"
+                  >
+                    🥗 {pref.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        <Button onClick={handleCreateDiet} disabled={creating}>
-          <Plus className="mr-2" size={20} />
-          {creating ? 'Criando...' : 'Nova Dieta'}
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+            <Edit className="mr-2" size={20} />
+            Editar
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/dashboard/patients/${patientId}/measurements`)}
+          >
+            <Scale className="mr-2" size={20} />
+            Medições
+          </Button>
+          <Button onClick={handleCreateDiet} disabled={creating}>
+            <Plus className="mr-2" size={20} />
+            {creating ? 'Criando...' : 'Nova Dieta'}
+          </Button>
+        </div>
       </div>
 
+      {/* Informações Metabólicas */}
+      <MetabolicInfoCard patient={patient} latestWeight={latestWeight} />
+
+      {/* Dietas */}
       <Card>
         <CardHeader>
           <CardTitle>Dietas do Paciente</CardTitle>
@@ -189,6 +247,14 @@ export default function PatientDietsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog de Edição */}
+      <PatientDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        patient={patient}
+        onSuccess={loadData}
+      />
     </div>
   );
 }

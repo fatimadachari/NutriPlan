@@ -26,8 +26,14 @@ export interface Patient {
   weight: number;
   height: number;
   goal: string;
+  gender: string;
+  activityLevel: string;
+  targetWeight?: number;
+  targetDate?: string;
   nutritionistId: string;
   createdAt: string;
+  bmr: number;
+  tdee: number;
   allergies: Allergy[];
   healthConditions: HealthCondition[];
   dietaryPreferences: DietaryPreference[];

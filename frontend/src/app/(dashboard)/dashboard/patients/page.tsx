@@ -153,7 +153,7 @@ export default function PatientsPage() {
                           onClick={() => router.push(`/dashboard/patients/${patient.id}`)}
                         >
                           <FileText size={16} className="mr-1" />
-                          Dietas
+                          Ver Detalhes
                         </Button>
                         <Button
                           variant="outline"

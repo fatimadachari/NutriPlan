@@ -48,7 +48,11 @@ public class PatientsController : ControllerBase
             dto.Weight,
             dto.Height,
             dto.Goal,
-            dto.NutritionistId
+            dto.NutritionistId,
+            dto.Gender,
+            dto.ActivityLevel,
+            dto.TargetWeight,
+            dto.TargetDate
         );
 
         var created = await _patientRepository.CreateAsync(patient);
@@ -60,25 +64,29 @@ public class PatientsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<PatientResponseDto>> Update(Guid id, [FromBody] UpdatePatientDto dto)
     {
-        var patient = await _patientRepository.GetByIdAsync(id);
-        if (patient == null)
+        var existingPatient = await _patientRepository.GetByIdAsync(id);
+        if (existingPatient == null)
             return NotFound(new { message = "Paciente não encontrado" });
 
-        var updated = new Patient(
+        var patient = new Patient(
             dto.Name,
             dto.Email,
             dto.Age,
             dto.Weight,
             dto.Height,
             dto.Goal,
-            patient.NutritionistId
+            existingPatient.NutritionistId,
+            dto.Gender,
+            dto.ActivityLevel,
+            dto.TargetWeight,
+            dto.TargetDate
         );
 
-        typeof(Patient).GetProperty("Id")!.SetValue(updated, id);
+        typeof(Patient).GetProperty("Id")!.SetValue(patient, id);
 
-        await _patientRepository.UpdateAsync(updated);
+        await _patientRepository.UpdateAsync(patient);
 
-        var response = MapToPatientResponse(updated);
+        var response = MapToPatientResponse(patient);
         return Ok(response);
     }
 
@@ -121,8 +129,14 @@ public class PatientsController : ControllerBase
             Weight = patient.Weight,
             Height = patient.Height,
             Goal = patient.Goal,
+            Gender = patient.Gender,
+            ActivityLevel = patient.ActivityLevel,
+            TargetWeight = patient.TargetWeight,
+            TargetDate = patient.TargetDate,
             NutritionistId = patient.NutritionistId,
             CreatedAt = patient.CreatedAt,
+            BMR = patient.CalculateBMR(),
+            TDEE = patient.CalculateTDEE(),
             Allergies = patient.PatientAllergies.Select(pa => new AllergyDto
             {
                 Id = pa.Allergy.Id,

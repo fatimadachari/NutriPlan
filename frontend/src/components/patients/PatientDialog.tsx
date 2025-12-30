@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -43,6 +50,10 @@ export default function PatientDialog({
     weight: '',
     height: '',
     goal: '',
+    gender: 'M',
+    activityLevel: 'Sedentary',
+    targetWeight: '',
+    targetDate: '',
   });
 
   // Opções disponíveis
@@ -67,6 +78,10 @@ export default function PatientDialog({
           weight: patient.weight.toString(),
           height: patient.height.toString(),
           goal: patient.goal,
+          gender: patient.gender,
+          activityLevel: patient.activityLevel,
+          targetWeight: patient.targetWeight?.toString() || '',
+          targetDate: patient.targetDate ? patient.targetDate.split('T')[0] : '',
         });
         setSelectedAllergies(patient.allergies.map(a => a.id));
         setSelectedConditions(patient.healthConditions.map(h => h.id));
@@ -79,6 +94,10 @@ export default function PatientDialog({
           weight: '',
           height: '',
           goal: '',
+          gender: 'M',
+          activityLevel: 'Sedentary',
+          targetWeight: '',
+          targetDate: '',
         });
         setSelectedAllergies([]);
         setSelectedConditions([]);
@@ -116,6 +135,10 @@ export default function PatientDialog({
         weight: parseFloat(formData.weight),
         height: parseFloat(formData.height),
         goal: formData.goal,
+        gender: formData.gender,
+        activityLevel: formData.activityLevel,
+        targetWeight: formData.targetWeight ? parseFloat(formData.targetWeight) : undefined,
+        targetDate: formData.targetDate ? new Date(formData.targetDate).toISOString() : undefined,
         nutritionistId: user?.userId || '',
       };
 
@@ -212,7 +235,7 @@ export default function PatientDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="age">Idade</Label>
                   <Input
@@ -227,6 +250,26 @@ export default function PatientDialog({
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Sexo</Label>
+                  <Select
+                    value={formData.gender}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, gender: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="M">Masculino</SelectItem>
+                      <SelectItem value="F">Feminino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="weight">Peso (kg)</Label>
                   <Input
@@ -269,6 +312,55 @@ export default function PatientDialog({
                   }
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="activityLevel">Nível de Atividade Física</Label>
+                <Select
+                  value={formData.activityLevel}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, activityLevel: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Sedentary">Sedentário (pouco ou nenhum exercício)</SelectItem>
+                    <SelectItem value="Light">Leve (exercício 1-3 dias/semana)</SelectItem>
+                    <SelectItem value="Moderate">Moderado (exercício 3-5 dias/semana)</SelectItem>
+                    <SelectItem value="Active">Ativo (exercício 6-7 dias/semana)</SelectItem>
+                    <SelectItem value="VeryActive">Muito ativo (exercício intenso diário)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="targetWeight">Meta de Peso (kg) - Opcional</Label>
+                  <Input
+                    id="targetWeight"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={formData.targetWeight}
+                    onChange={(e) =>
+                      setFormData({ ...formData, targetWeight: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="targetDate">Data Meta - Opcional</Label>
+                  <Input
+                    id="targetDate"
+                    type="date"
+                    value={formData.targetDate}
+                    onChange={(e) =>
+                      setFormData({ ...formData, targetDate: e.target.value })
+                    }
+                  />
+                </div>
               </div>
             </div>
 
