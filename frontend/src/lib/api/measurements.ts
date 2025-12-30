@@ -53,4 +53,11 @@ export const measurementsApi = {
   async deleteBodyMeasurement(id: string): Promise<void> {
     await apiClient.delete(`/bodymeasurements/${id}`);
   },
+
+  async downloadEvolutionReport(patientId: string): Promise<Blob> {
+    const response = await apiClient.get(`/reports/evolution/${patientId}`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
