@@ -4,14 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, LogOut, Home } from 'lucide-react';
+import { LayoutDashboard, Users, Utensils, FileText, BarChart3, LogOut } from 'lucide-react';
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/patients', label: 'Pacientes', icon: Users },
   ];
 
@@ -32,6 +32,16 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
+        <Link
+          href="/dashboard/analytics"
+          className={`flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors ${
+            pathname === '/dashboard/analytics' ? 'bg-blue-50 text-blue-600' : ''
+          }`}
+        >
+          <BarChart3 className="mr-3" size={20} />
+          Analytics
+        </Link>
+
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;

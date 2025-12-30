@@ -140,3 +140,43 @@ export interface BodyMeasurement {
   muscleMassPercentage?: number;
   notes?: string;
 }
+
+export interface DashboardStats {
+  totalPatients: number;
+  totalDiets: number;
+  totalWeightMeasurements: number;
+  totalBodyMeasurements: number;
+  patientsWithGoals: number;
+  activePatientsThisMonth: number;
+}
+
+export interface PatientsByGoal {
+  goal: string;
+  count: number;
+}
+
+export interface PatientProgress {
+  patientId: string;
+  patientName: string;
+  initialWeight: number;
+  currentWeight: number;
+  weightChange: number;
+  daysSinceStart: number;
+  weeklyAverage: number;
+  firstMeasurementDate: string;
+  lastMeasurementDate: string;
+}
+
+export interface InactivePatient {
+  patientId: string;
+  patientName: string;
+  lastWeightMeasurement?: string;
+  lastBodyMeasurement?: string;
+  daysSinceLastMeasurement: number;
+}
+
+export interface BMIDistribution {
+  category: string;
+  count: number;
+  [key: string]: string | number; 
+}
