@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev:front": "cd frontend && npm run dev",
+    "dev:back": "cd backend && dotnet run --project NutriPlan.API",
+    "dev": "concurrently \"npm run dev:front\" \"npm run dev:back\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
