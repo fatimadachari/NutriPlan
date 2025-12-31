@@ -8,7 +8,7 @@ import { measurementsApi } from '@/lib/api/measurements';
 import { Patient, Diet, WeightHistory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, FileDown, Edit, Trash2, Scale } from 'lucide-react';
+import { ArrowLeft, Plus, FileDown, Edit, Trash2, Scale, FileText } from 'lucide-react';
 import MetabolicInfoCard from '@/components/patients/MetabolicInfoCard';
 import PatientDialog from '@/components/patients/PatientDialog';
 
@@ -155,6 +155,13 @@ export default function PatientDietsPage() {
           >
             <Scale className="mr-2" size={20} />
             Medições
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/dashboard/patients/${patientId}/anamnese`)}
+          >
+            <FileText className="mr-2" size={20} />
+            Anamnese
           </Button>
           <Button onClick={handleCreateDiet} disabled={creating}>
             <Plus className="mr-2" size={20} />
