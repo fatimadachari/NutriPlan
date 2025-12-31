@@ -76,6 +76,7 @@ builder.Services.AddScoped<IPdfService, PdfService>();
 builder.Services.AddScoped<IWeightHistoryRepository, WeightHistoryRepository>();
 builder.Services.AddScoped<IBodyMeasurementRepository, BodyMeasurementRepository>();
 builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
+builder.Services.AddScoped<IAnamneseRepository, AnamneseRepository>();
 
 builder.Services.AddSwaggerGen(options =>
 {
