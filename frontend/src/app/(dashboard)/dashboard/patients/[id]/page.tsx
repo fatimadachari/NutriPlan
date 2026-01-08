@@ -7,8 +7,12 @@ import { dietsApi } from '@/lib/api/diets';
 import { measurementsApi } from '@/lib/api/measurements';
 import { Patient, Diet, WeightHistory } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, FileDown, Edit, Trash2, Scale, FileText } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  ArrowLeft, Plus, FileDown, Edit, Trash2,
+  Scale, FileText, Calendar, Zap, ChevronRight,
+  Activity, Heart, Target, Mail, ShieldAlert, ClipboardList
+} from 'lucide-react';
 import MetabolicInfoCard from '@/components/patients/MetabolicInfoCard';
 import PatientDialog from '@/components/patients/PatientDialog';
 
@@ -24,9 +28,7 @@ export default function PatientDietsPage() {
   const [creating, setCreating] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [patientId]);
+  useEffect(() => { loadData(); }, [patientId]);
 
   const loadData = async () => {
     try {
@@ -38,11 +40,7 @@ export default function PatientDietsPage() {
       setPatient(patientData);
       setDiets(dietsData);
       setWeightHistory(weightData);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   const handleCreateDiet = async () => {
@@ -50,22 +48,7 @@ export default function PatientDietsPage() {
     try {
       const newDiet = await dietsApi.create(patientId);
       router.push(`/dashboard/diets/${newDiet.id}`);
-    } catch (error) {
-      console.error('Erro ao criar dieta:', error);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleDeleteDiet = async (dietId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta dieta?')) {
-      try {
-        await dietsApi.delete(dietId);
-        loadData();
-      } catch (error) {
-        console.error('Erro ao excluir dieta:', error);
-      }
-    }
+    } catch (error) { console.error(error); } finally { setCreating(false); }
   };
 
   const handleDownloadPdf = async (dietId: string) => {
@@ -74,194 +57,197 @@ export default function PatientDietsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dieta-${dietId}.pdf`;
+      a.download = `dieta-${patient?.name.replace(/\s+/g, '-').toLowerCase()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
-      console.error('Erro ao baixar PDF:', error);
-    }
+    } catch (error) { console.error(error); }
   };
 
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  if (loading) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-emerald-600">
+      <div className="w-12 h-12 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin"></div>
+      <p className="font-black text-[10px] uppercase tracking-widest">Acessando Prontuário...</p>
+    </div>
+  );
 
-  if (!patient) {
-    return <div>Paciente não encontrado</div>;
-  }
-
+  if (!patient) return null;
   const latestWeight = weightHistory[0]?.weight;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <div className="p-8 max-w-[1400px] mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+      {/* --- HEADER PRINCIPAL --- */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex items-center gap-5">
           <Button
             variant="ghost"
-            size="sm"
             onClick={() => router.push('/dashboard/patients')}
+            className="rounded-2xl bg-white shadow-sm border border-slate-100 hover:bg-emerald-50 text-emerald-600 h-14 w-14 shrink-0"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={24} />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{patient.name}</h1>
-            <p className="text-gray-600 mt-1">
-              {patient.age} anos | {patient.weight}kg | {patient.height}cm | {patient.goal}
-            </p>
-            {/* Badges de Restrições */}
-            {(patient.allergies.length > 0 || 
-              patient.healthConditions.length > 0 || 
-              patient.dietaryPreferences.length > 0) && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {patient.allergies.map((allergy) => (
-                  <span
-                    key={allergy.id}
-                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded font-medium"
-                  >
-                    🚫 {allergy.name}
-                  </span>
-                ))}
-                {patient.healthConditions.map((condition) => (
-                  <span
-                    key={condition.id}
-                    className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded font-medium"
-                  >
-                    💊 {condition.name}
-                  </span>
-                ))}
-                {patient.dietaryPreferences.map((pref) => (
-                  <span
-                    key={pref.id}
-                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded font-medium"
-                  >
-                    🥗 {pref.name}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-black tracking-tighter text-slate-900 uppercase leading-none">{patient.name}</h1>
+              <div className="h-2.5 w-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+            </div>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Status: Paciente em Acompanhamento</p>
           </div>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
-            <Edit className="mr-2" size={20} />
-            Editar
+
+        {/* GRUPO DE AÇÕES REESTRUTURADO */}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)} className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-5 border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all">
+            <Edit className="mr-2" size={16} /> Editar
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/dashboard/patients/${patientId}/measurements`)}
-          >
-            <Scale className="mr-2" size={20} />
-            Medições
+          <Button variant="outline" onClick={() => router.push(`/dashboard/patients/${patientId}/measurements`)} className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-5 border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all">
+            <Scale className="mr-2" size={16} /> Medições
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/dashboard/patients/${patientId}/anamnese`)}
-          >
-            <FileText className="mr-2" size={20} />
-            Anamnese
+          <Button variant="outline" onClick={() => router.push(`/dashboard/patients/${patientId}/anamnese`)} className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-5 border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all">
+            <ClipboardList className="mr-2" size={16} /> Anamnese
           </Button>
-          <Button onClick={handleCreateDiet} disabled={creating}>
-            <Plus className="mr-2" size={20} />
-            {creating ? 'Criando...' : 'Nova Dieta'}
+          <Button onClick={handleCreateDiet} disabled={creating} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-8 shadow-lg shadow-emerald-100 transition-all active:scale-95">
+            <Plus className="mr-2" size={18} strokeWidth={3} /> {creating ? 'Gerando...' : 'Nova Dieta'}
           </Button>
         </div>
       </div>
 
-      {/* Informações Metabólicas */}
-      <MetabolicInfoCard patient={patient} latestWeight={latestWeight} />
-
-      {/* Dietas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Dietas do Paciente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {diets.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Nenhuma dieta criada ainda.</p>
-              <Button onClick={handleCreateDiet} disabled={creating}>
-                <Plus className="mr-2" size={20} />
-                {creating ? 'Criando...' : 'Criar Primeira Dieta'}
-              </Button>
+      {/* --- GRID DE INFOS CLÍNICAS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="bg-white border-none shadow-sm rounded-[2rem] overflow-hidden group">
+          <div className="h-1.5 w-full bg-red-400 opacity-20 group-hover:opacity-100 transition-opacity"></div>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-50 text-red-500 rounded-lg">
+                <ShieldAlert size={18} />
+              </div>
+              <h3 className="text-slate-900 font-black text-[11px] uppercase tracking-widest">Alergias & Riscos</h3>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {diets.map((diet) => (
-                <Card key={diet.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-500">
-                          Criada em {new Date(diet.createdDate).toLocaleDateString('pt-BR')}
-                        </p>
-                        <div className="flex space-x-6 text-sm">
-                          <div>
-                            <span className="font-medium">Calorias:</span>{' '}
-                            <span className="text-green-600 font-bold">
-                              {diet.totalCalories.toFixed(1)} kcal
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium">Proteínas:</span>{' '}
-                            {diet.totalProtein.toFixed(1)}g
-                          </div>
-                          <div>
-                            <span className="font-medium">Carboidratos:</span>{' '}
-                            {diet.totalCarbs.toFixed(1)}g
-                          </div>
-                          <div>
-                            <span className="font-medium">Gorduras:</span>{' '}
-                            {diet.totalFat.toFixed(1)}g
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          {diet.meals.length} refeição(ões)
-                        </p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/diets/${diet.id}`)}
-                        >
-                          <Edit size={16} className="mr-1" />
-                          Editar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadPdf(diet.id)}
-                        >
-                          <FileDown size={16} className="mr-1" />
-                          PDF
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteDiet(diet.id)}
-                        >
-                          <Trash2 size={16} className="text-red-600" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="flex flex-wrap gap-2">
+              {patient.allergies.length > 0 ? patient.allergies.map(a => (
+                <span key={a.id} className="bg-red-50 text-red-600 px-3 py-1 rounded-lg text-[10px] font-black border border-red-100 uppercase tracking-tighter">
+                  {a.name}
+                </span>
+              )) : <span className="text-slate-300 text-[10px] font-bold italic uppercase tracking-widest pl-1">Livre de alergias</span>}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-none shadow-sm rounded-[2rem] overflow-hidden group">
+          <div className="h-1.5 w-full bg-emerald-500 opacity-20 group-hover:opacity-100 transition-opacity"></div>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                <Activity size={18} />
+              </div>
+              <h3 className="text-slate-900 font-black text-[11px] uppercase tracking-widest">Diagnósticos</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {patient.healthConditions.map(h => (
+                <span key={h.id} className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-[10px] font-black border border-emerald-100 italic uppercase">
+                  {h.name}
+                </span>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Dialog de Edição */}
-      <PatientDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        patient={patient}
-        onSuccess={loadData}
-      />
+        <Card className="bg-white border-none shadow-sm rounded-[2rem] overflow-hidden group">
+          <div className="h-1.5 w-full bg-blue-400 opacity-20 group-hover:opacity-100 transition-opacity"></div>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-50 text-blue-500 rounded-lg">
+                <Heart size={18} />
+              </div>
+              <h3 className="text-slate-900 font-black text-[11px] uppercase tracking-widest">Preferências</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {patient.dietaryPreferences.map(p => (
+                <span key={p.id} className="bg-slate-50 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-100 uppercase tracking-tighter">
+                  {p.name}
+                </span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* --- RESUMO METABÓLICO --- */}
+      <MetabolicInfoCard patient={patient} latestWeight={latestWeight} />
+
+      {/* --- SEÇÃO DE DIETAS --- */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 px-2">
+          <div className="h-8 w-1.5 bg-emerald-500 rounded-full"></div>
+          <h2 className="text-2xl font-black tracking-tighter text-slate-900 uppercase">Histórico de Planos</h2>
+        </div>
+
+        {diets.length === 0 ? (
+          <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] p-20 text-center">
+            <Zap size={48} className="text-emerald-200 mx-auto mb-4" />
+            <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Pronto para começar?</h3>
+            <p className="text-slate-400 font-medium text-sm mb-8">Nenhum plano alimentar foi gerado para este paciente.</p>
+            <Button onClick={handleCreateDiet} className="bg-emerald-600 hover:bg-emerald-500 rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100">
+              Prescrever Primeira Dieta
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {diets.map((diet) => (
+              <Card key={diet.id} className="group bg-white border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2.5rem] overflow-hidden">
+                <CardContent className="p-8">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                      {new Date(diet.createdDate).toLocaleDateString('pt-BR')}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleDownloadPdf(diet.id)} className="h-10 w-10 rounded-xl text-slate-300 hover:text-emerald-600 hover:bg-emerald-50">
+                        <FileDown size={20} />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50">
+                        <Trash2 size={20} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Calórico</p>
+                    <div className="flex items-baseline gap-2">
+                      <h4 className="text-5xl font-black text-slate-900 tracking-tighter">{diet.totalCalories.toFixed(0)}</h4>
+                      <span className="text-emerald-500 font-black text-xs uppercase">kcal</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 mb-8">
+                    {[
+                      { label: 'PROT', val: diet.totalProtein, color: 'bg-emerald-50 text-emerald-600' },
+                      { label: 'CARB', val: diet.totalCarbs, color: 'bg-blue-50 text-blue-600' },
+                      { label: 'FAT', val: diet.totalFat, color: 'bg-amber-50 text-amber-600' }
+                    ].map((m, i) => (
+                      <div key={i} className={`${m.color} rounded-2xl p-4 text-center border border-white/50 group-hover:border-white transition-all`}>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1 opacity-70">{m.label}</p>
+                        <p className="text-sm font-black">{m.val.toFixed(0)}g</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    onClick={() => router.push(`/dashboard/diets/${diet.id}`)}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] h-14 shadow-lg shadow-emerald-50 group/btn"
+                  >
+                    Abrir Dieta
+                    <ChevronRight size={18} className="ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <PatientDialog open={editDialogOpen} onOpenChange={setEditDialogOpen} patient={patient} onSuccess={loadData} />
     </div>
   );
 }

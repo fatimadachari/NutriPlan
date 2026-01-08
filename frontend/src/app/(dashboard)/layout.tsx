@@ -1,40 +1,11 @@
-'use client';
+import Sidebar from "@/components/layouts/Sidebar";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import Sidebar from '@/components/layouts/Sidebar';
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg">Carregando...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
-      <main className="flex-1 p-8">
+      {/* ml-72 corresponde à largura da sidebar (w-72) */}
+      <main className="flex-1 ml-72 p-0 overflow-auto">
         {children}
       </main>
     </div>

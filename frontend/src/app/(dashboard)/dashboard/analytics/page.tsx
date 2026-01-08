@@ -10,7 +10,7 @@ import {
   InactivePatient,
   BMIDistribution,
 } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Users,
@@ -22,6 +22,7 @@ import {
   TrendingUp,
   AlertTriangle,
   BarChart3,
+  ChevronRight,
 } from 'lucide-react';
 import PatientsByGoalChart from '@/components/dashboard/PatientsByGoalChart';
 import BMIDistributionChart from '@/components/dashboard/BMIDistributionChart';
@@ -64,227 +65,170 @@ export default function AnalyticsPage() {
   };
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+        <p className="text-emerald-600 font-black text-[10px] uppercase tracking-widest">Sincronizando Inteligência...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Analytics</h1>
-        <p className="text-gray-600 mt-1">Visão geral do seu consultório</p>
+    <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="h-1.5 w-10 bg-emerald-500 rounded-full mb-3"></div>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900 uppercase">Analytics</h1>
+          <p className="text-slate-500 font-medium">Desempenho e métricas do seu consultório digital</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100">
+          <Activity size={16} className="text-emerald-500" />
+          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest italic">Dados em tempo real</span>
+        </div>
       </div>
 
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <Users className="mr-2 h-4 w-4 text-blue-500" />
-              Total de Pacientes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats?.totalPatients || 0}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              {stats?.activePatientsThisMonth || 0} ativos nos últimos 30 dias
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <FileText className="mr-2 h-4 w-4 text-green-500" />
-              Total de Dietas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats?.totalDiets || 0}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Dietas criadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <Scale className="mr-2 h-4 w-4 text-purple-500" />
-              Medições de Peso
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats?.totalWeightMeasurements || 0}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Registros de peso
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <Activity className="mr-2 h-4 w-4 text-orange-500" />
-              Medidas Corporais
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats?.totalBodyMeasurements || 0}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Avaliações corporais
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <Target className="mr-2 h-4 w-4 text-red-500" />
-              Pacientes com Metas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats?.patientsWithGoals || 0}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Definidas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className={inactivePatients.length > 0 ? 'border-orange-200 bg-orange-50' : ''}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <AlertTriangle className="mr-2 h-4 w-4 text-orange-500" />
-              Pacientes Inativos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-orange-600">{inactivePatients.length}</p>
-            <p className="text-xs text-gray-600 mt-1">
-              Sem medições há +30 dias
-            </p>
-          </CardContent>
-        </Card>
+      {/* MÉTRICAS DE IMPACTO (GRID 3x2) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[
+          { label: 'Base de Pacientes', value: stats?.totalPatients, sub: `${stats?.activePatientsThisMonth} ativos este mês`, icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
+          { label: 'Planejamentos', value: stats?.totalDiets, sub: 'Dietas prescritas', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Medições Realizadas', value: stats?.totalWeightMeasurements, sub: 'Registros antropométricos', icon: Scale, color: 'text-purple-500', bg: 'bg-purple-50' },
+          { label: 'Avaliações Biométricas', value: stats?.totalBodyMeasurements, sub: 'Históricos de composição', icon: BarChart3, color: 'text-orange-500', bg: 'bg-orange-50' },
+          { label: 'Foco em Resultados', value: stats?.patientsWithGoals, sub: 'Pacientes com metas ativas', icon: Target, color: 'text-red-500', bg: 'bg-red-50' },
+          { label: 'Atenção Necessária', value: inactivePatients.length, sub: 'Sem retorno há +30 dias', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50', urgent: inactivePatients.length > 0 }
+        ].map((item, i) => (
+          <Card key={i} className={`rounded-[2rem] border-none shadow-sm transition-all hover:shadow-xl ${item.urgent ? 'ring-2 ring-amber-200' : ''}`}>
+            <CardContent className="p-7 flex items-center gap-5">
+              <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center ${item.color} shrink-0`}>
+                <item.icon size={28} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                <p className={`text-3xl font-black text-slate-800 tracking-tighter ${item.urgent ? 'text-amber-600' : ''}`}>{item.value || 0}</p>
+                <p className="text-[11px] font-bold text-slate-500 italic mt-0.5">{item.sub}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart3 className="mr-2 h-5 w-5 text-blue-600" />
-              Pacientes por Objetivo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* DISTRIBUIÇÕES VISUAIS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="rounded-[3rem] border-none shadow-sm bg-white p-8">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-6 w-1 bg-blue-500 rounded-full"></div>
+            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Pacientes por Objetivo</h3>
+          </div>
+          <div className="h-[300px]">
             <PatientsByGoalChart data={patientsByGoal} />
-          </CardContent>
+          </div>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="mr-2 h-5 w-5 text-green-600" />
-              Distribuição de IMC
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="rounded-[3rem] border-none shadow-sm bg-white p-8">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-6 w-1 bg-emerald-500 rounded-full"></div>
+            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Distribuição de IMC</h3>
+          </div>
+          <div className="h-[300px]">
             <BMIDistributionChart data={bmiDistribution} />
-          </CardContent>
+          </div>
         </Card>
       </div>
 
-      {/* Top Progresso */}
-      {topProgress.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingDown className="mr-2 h-5 w-5 text-green-600" />
-              Melhores Resultados (Evolução de Peso)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* RANKING DE PERFORMANCE & ALERTAS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* TOP PROGRESSO */}
+        <Card className="lg:col-span-7 rounded-[3rem] border-none shadow-sm bg-white overflow-hidden">
+          <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <TrendingDown className="text-emerald-500" size={24} />
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter italic">Top Performance (Evolução)</h3>
+            </div>
+          </div>
+          <CardContent className="p-6">
             <div className="space-y-3">
               {topProgress.map((patient) => (
                 <div
                   key={patient.patientId}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                  className="group flex items-center justify-between p-5 bg-slate-50/50 rounded-2xl hover:bg-emerald-50 transition-all border border-transparent hover:border-emerald-100 cursor-pointer"
                   onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)}
                 >
-                  <div className="flex-1">
-                    <p className="font-semibold">{patient.patientName}</p>
-                    <p className="text-sm text-gray-600">
-                      {patient.initialWeight.toFixed(1)}kg → {patient.currentWeight.toFixed(1)}kg
-                      <span className="ml-2 text-xs">
-                        ({patient.daysSinceStart} dias)
-                      </span>
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center font-black text-emerald-600 shadow-sm group-hover:rotate-6 transition-transform">
+                      {patient.patientName.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-800 uppercase tracking-tight">{patient.patientName}</p>
+                      <p className="text-[11px] font-bold text-slate-400 italic">
+                        {patient.initialWeight.toFixed(1)}kg → {patient.currentWeight.toFixed(1)}kg 
+                        <span className="ml-2 bg-white px-2 py-0.5 rounded-full not-italic">⏱ {patient.daysSinceStart} dias</span>
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <div className={`flex items-center gap-1 font-semibold ${
-                      patient.weightChange < 0 ? 'text-green-600' : 'text-orange-600'
-                    }`}>
-                      {patient.weightChange < 0 ? (
-                        <TrendingDown size={18} />
-                      ) : (
-                        <TrendingUp size={18} />
-                      )}
+                    <div className={`flex items-center gap-1 font-black text-sm ${patient.weightChange < 0 ? 'text-emerald-600' : 'text-orange-500'}`}>
+                      {patient.weightChange < 0 ? <TrendingDown size={18} /> : <TrendingUp size={18} />}
                       {patient.weightChange > 0 ? '+' : ''}{patient.weightChange.toFixed(1)}kg
                     </div>
-                    <p className="text-xs text-gray-600">
-                      {patient.weeklyAverage.toFixed(2)}kg/semana
-                    </p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{patient.weeklyAverage.toFixed(2)}kg/sem</p>
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Pacientes Inativos */}
-      {inactivePatients.length > 0 && (
-        <Card className="border-orange-200">
-          <CardHeader>
-            <CardTitle className="flex items-center text-orange-700">
-              <AlertTriangle className="mr-2 h-5 w-5" />
-              Pacientes Sem Acompanhamento Recente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* PACIENTES INATIVOS */}
+        <Card className="lg:col-span-5 rounded-[3rem] border-none shadow-sm bg-white overflow-hidden border-t-4 border-t-amber-400">
+          <div className="p-8 border-b border-slate-50">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="text-amber-500" size={24} />
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter italic">Zona de Risco</h3>
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Retenção de Pacientes</p>
+          </div>
+          <CardContent className="p-6">
             <div className="space-y-3">
               {inactivePatients.slice(0, 5).map((patient) => (
                 <div
                   key={patient.patientId}
-                  className="flex items-center justify-between p-4 bg-orange-50 rounded-lg hover:bg-orange-100 cursor-pointer transition-colors"
+                  className="flex items-center justify-between p-4 bg-amber-50/50 rounded-2xl hover:bg-amber-100 transition-all border border-transparent hover:border-amber-200 cursor-pointer group"
                   onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)}
                 >
-                  <div>
-                    <p className="font-semibold">{patient.patientName}</p>
-                    <p className="text-sm text-gray-600">
-                      {patient.lastWeightMeasurement
-                        ? `Última medição: ${format(new Date(patient.lastWeightMeasurement), "dd/MM/yyyy", { locale: ptBR })}`
-                        : 'Sem medições registradas'}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-black text-amber-600 shadow-sm">
+                      <Scale size={18} />
+                    </div>
+                    <div>
+                      <p className="font-black text-slate-700 uppercase tracking-tighter text-sm">{patient.patientName}</p>
+                      <p className="text-[10px] font-bold text-slate-400 italic">
+                        Última: {patient.lastWeightMeasurement ? format(new Date(patient.lastWeightMeasurement), "dd/MM/yy") : 'N/A'}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-orange-600">
-                      {patient.daysSinceLastMeasurement} dias
+                    <p className="font-black text-amber-600 tracking-tighter text-lg leading-none">
+                      {patient.daysSinceLastMeasurement}
                     </p>
-                    <p className="text-xs text-gray-600">sem medições</p>
+                    <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">Dias inativo</p>
                   </div>
                 </div>
               ))}
             </div>
             {inactivePatients.length > 5 && (
-              <p className="text-sm text-gray-600 text-center mt-4">
-                + {inactivePatients.length - 5} paciente(s) inativo(s)
-              </p>
+              <Button 
+                variant="ghost" 
+                className="w-full mt-4 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-amber-600"
+              >
+                Ver todos os +{inactivePatients.length - 5} pacientes <ChevronRight size={14} />
+              </Button>
             )}
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 }
