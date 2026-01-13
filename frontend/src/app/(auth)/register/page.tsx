@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { Loader2, ArrowRight, Leaf, Lock, Mail, User, FileBadge } from 'lucide-react';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -24,152 +25,197 @@ export default function RegisterPage() {
     try {
       await register({ fullName, email, password, crn });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar conta');
+      setError(err.response?.data?.message || 'Erro ao criar conta. Verifique os dados.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Estilo padrão dos inputs (igual ao Login)
+  const inputClasses = "pl-10 h-11 bg-muted/30 border-input transition-all focus:bg-background focus:ring-2 focus:ring-primary/20";
+  const iconClasses = "absolute left-3 top-3 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors";
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#04120f] p-4 relative overflow-hidden">
+    <div className="min-h-screen w-full flex bg-background">
       
-      {/* --- BACKGROUND DINÂMICO DE ALTA ENERGIA (IGUAL AO LOGIN) --- */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute top-[-15%] left-[-10%] w-[700px] h-[700px] bg-emerald-500/40 rounded-full blur-[120px] animate-float"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-lime-400/30 rounded-full blur-[100px] animate-float-delayed"></div>
-        <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-teal-500/30 rounded-full blur-[110px] animate-float"></div>
-        <div className="absolute bottom-[20%] left-[20%] w-[300px] h-[300px] bg-emerald-300/20 rounded-full blur-[60px] animate-orbit"></div>
+      {/* --- LADO ESQUERDO: VISUAL BRANDING (IDÊNTICO AO LOGIN) --- */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden flex-col justify-between p-16 text-primary-foreground">
+        {/* Background Orgânico Abstrato (CSS Only) */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white rounded-full mix-blend-overlay blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400 rounded-full mix-blend-overlay blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+        </div>
+
+        {/* Logo/Header */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
+            <Leaf className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-semibold tracking-tight">NutriPlan</span>
+        </div>
+
+        {/* TEXTOS ALTERADOS PARA REGISTRO */}
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-5xl font-light leading-tight mb-6">
+            Comece sua <br />
+            jornada <span className="font-serif italic text-emerald-200">digital.</span>
+          </h1>
+          <p className="text-primary-foreground/80 text-lg font-light leading-relaxed">
+            Junte-se à plataforma líder para nutricionistas e potencialize seus atendimentos clínicos com tecnologia.
+          </p>
+        </div>
+
+        {/* Footer da imagem */}
+        <div className="relative z-10 flex items-center gap-4 text-xs font-medium text-primary-foreground/60 uppercase tracking-widest">
+          <span>Software para Nutricionistas</span>
+          <div className="h-px w-8 bg-white/30"></div>
+          <span>Cadastro</span>
+        </div>
       </div>
 
-      {/* --- CARD DE REGISTO --- */}
-      <div className="relative z-10 flex flex-col md:flex-row w-full max-w-4xl bg-white/[0.03] backdrop-blur-2xl rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.5)] min-h-[550px] border border-white/10">
-        
-        {/* LADO ESQUERDO: BANNER COLORIDO */}
-        <div className="w-full md:w-[35%] bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-900 p-10 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/10 to-transparent"></div>
+      {/* --- LADO DIREITO: FORMULÁRIO DE REGISTRO --- */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-background relative overflow-y-auto">
+        <div className="w-full max-w-[420px] space-y-8 py-8">
           
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-10 group">
-              <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.3)] group-hover:rotate-12 transition-transform duration-500">
-                <span className="text-emerald-900 text-2xl font-black">N</span>
+          <div className="text-center lg:text-left">
+             {/* Mobile Logo */}
+            <div className="flex lg:hidden justify-center mb-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                <Leaf className="w-6 h-6" />
               </div>
-              <span className="text-2xl font-black tracking-tighter">Nutri<span className="text-emerald-300">Plan</span></span>
             </div>
-            
-            <h1 className="text-4xl font-black leading-[1.1] mb-4">
-              Junte-se <br />
-              à nossa <br />
-              <span className="text-emerald-300 italic">rede.</span>
-            </h1>
-            <p className="text-emerald-100/70 text-sm font-medium leading-relaxed">
-              Comece a transformar a vida dos seus pacientes hoje mesmo.
+
+            {/* TEXTOS DO CABEÇALHO DO FORMULÁRIO */}
+            <h2 className="text-3xl font-semibold text-foreground tracking-tight">Crie sua conta profissional</h2>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Preencha os dados abaixo para iniciar.
             </p>
           </div>
 
-          <div className="relative z-10 text-emerald-300/50 text-[10px] font-black uppercase tracking-[0.3em]">
-            Gestão Profissional
-          </div>
-        </div>
-
-        {/* LADO DIREITO: FORMULÁRIO */}
-        <div className="w-full md:w-[65%] p-10 md:p-14 flex flex-col justify-center bg-white">
-          <div className="max-w-md mx-auto w-full">
-            <div className="mb-8">
-              <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Criar Conta</h2>
-              <div className="h-1.5 w-10 bg-emerald-500 rounded-full mt-2"></div>
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
             
             {error && (
-              <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold animate-bounce-subtle">
-                ⚠️ {error}
+              <div className="p-4 rounded-lg bg-red-50 border border-red-100 text-red-700 text-sm flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label className="text-slate-400 text-[10px] uppercase font-black tracking-widest ml-1">Nome Completo</Label>
-                <Input
-                  placeholder="Dr. João Silva"
-                  className="h-12 bg-slate-50 border-slate-100 focus:border-emerald-500 focus:bg-white rounded-2xl transition-all font-medium text-slate-700"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
+            {/* CAMPOS DO REGISTRO (Estilo idêntico ao login) */}
+            <div className="space-y-4">
+              
+              {/* Nome Completo */}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nome Completo</Label>
+                <div className="relative group">
+                  <User className={iconClasses} />
+                  <Input 
+                    id="fullName" 
+                    placeholder="Ex: Dr. João Silva" 
+                    className={inputClasses}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
+              {/* Grid para Email e CRN */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-[10px] uppercase font-black tracking-widest ml-1">E-mail</Label>
-                  <Input
-                    type="email"
-                    placeholder="seu@email.com"
-                    className="h-12 bg-slate-50 border-slate-100 focus:border-emerald-500 focus:bg-white rounded-2xl transition-all font-medium text-slate-700"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                <div className="space-y-2">
+                    <Label htmlFor="email">E-mail</Label>
+                    <div className="relative group">
+                    <Mail className={iconClasses} />
+                    <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="seu@email.com" 
+                        className={inputClasses}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-slate-400 text-[10px] uppercase font-black tracking-widest ml-1">CRN</Label>
-                  <Input
-                    placeholder="0000/P"
-                    className="h-12 bg-slate-50 border-slate-100 focus:border-emerald-500 focus:bg-white rounded-2xl transition-all font-medium text-slate-700"
-                    value={crn}
-                    onChange={(e) => setCrn(e.target.value)}
-                    required
-                  />
+                <div className="space-y-2">
+                    <Label htmlFor="crn">CRN</Label>
+                    <div className="relative group">
+                    <FileBadge className={iconClasses} />
+                    <Input 
+                        id="crn" 
+                        placeholder="0000/UF" 
+                        className={inputClasses}
+                        value={crn}
+                        onChange={(e) => setCrn(e.target.value)}
+                        required
+                    />
+                    </div>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-slate-400 text-[10px] uppercase font-black tracking-widest ml-1">Palavra-passe</Label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  className="h-12 bg-slate-50 border-slate-100 focus:border-emerald-500 focus:bg-white rounded-2xl transition-all font-medium text-slate-700"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+              {/* Senha */}
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative group">
+                  <Lock className={iconClasses} />
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    placeholder="Mínimo 6 caracteres" 
+                    className={inputClasses}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-4 pt-6">
-                <Button 
-                  type="submit" 
-                  className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-[0_15px_30px_-5px_rgba(16,185,129,0.4)] font-black text-base transition-all active:scale-95"
-                  disabled={loading}
-                >
-                  {loading ? 'A criar conta...' : 'Concluir Registo'}
-                </Button>
-                <p className="text-center text-slate-400 text-xs font-bold uppercase tracking-tighter">
-                  Já tens uma conta?{' '}
-                  <Link href="/login" className="text-emerald-600 hover:text-emerald-700">Faz login</Link>
-                </p>
-              </div>
-            </form>
+            <Button 
+              type="submit" 
+              className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando conta...
+                </>
+              ) : (
+                <>
+                  Finalizar Cadastro <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          {/* DIVISOR E LINK ALTERNATIVO */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Já possui cadastro?
+              </span>
+            </div>
           </div>
+
+          <div className="text-center">
+            <Link 
+              href="/login" 
+              className="inline-flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 transition-colors hover:underline underline-offset-4"
+            >
+              Acesse sua conta
+            </Link>
+          </div>
+
+          {/* Rodapé discreto */}
+          <p className="text-center text-[10px] text-muted-foreground mt-8">
+            Ao se cadastrar, você concorda com nossos Termos de Uso e Política de Privacidade.
+          </p>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(30px, -40px) scale(1.1); }
-        }
-        @keyframes orbit {
-          0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
-          100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
-        }
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
-        }
-        .animate-float { animation: float 15s infinite ease-in-out; }
-        .animate-float-delayed { animation: float 18s infinite ease-in-out reverse; animation-delay: 2s; }
-        .animate-orbit { animation: orbit 25s infinite linear; }
-        .animate-bounce-subtle { animation: bounce-subtle 0.5s ease-in-out infinite; }
-      `}</style>
     </div>
   );
 }

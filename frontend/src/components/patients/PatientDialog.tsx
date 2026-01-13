@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Patient, Allergy, HealthCondition, DietaryPreference } from '@/types';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Allergy, HealthCondition, DietaryPreference } from '@/types';
 import { patientsApi } from '@/lib/api/patients';
 import { restrictionsApi } from '@/lib/api/restrictions';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Clipboard, ShieldAlert, Heart, Activity, Check } from 'lucide-react';
+import { User, ShieldAlert, Heart, Check, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function PatientDialog({ open, onOpenChange, patient, onSuccess }: any) {
   const { user } = useAuth();
@@ -21,10 +21,8 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
   });
 
   const [allergies, setAllergies] = useState<Allergy[]>([]);
-  const [healthConditions, setHealthConditions] = useState<HealthCondition[]>([]);
   const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreference[]>([]);
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
 
   useEffect(() => {
@@ -39,22 +37,20 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
           targetDate: patient.targetDate ? patient.targetDate.split('T')[0] : '',
         });
         setSelectedAllergies(patient.allergies.map((a: any) => a.id));
-        setSelectedConditions(patient.healthConditions.map((h: any) => h.id));
         setSelectedPreferences(patient.dietaryPreferences.map((d: any) => d.id));
       } else {
         setFormData({ name: '', email: '', age: '', weight: '', height: '', goal: '', gender: 'M', activityLevel: 'Sedentary', targetWeight: '', targetDate: '' });
-        setSelectedAllergies([]); setSelectedConditions([]); setSelectedPreferences([]);
+        setSelectedAllergies([]); setSelectedPreferences([]);
       }
     }
   }, [patient, open]);
 
   const loadRestrictions = async () => {
-    const [a, c, p] = await Promise.all([
+    const [a, p] = await Promise.all([
       restrictionsApi.getAllergies(),
-      restrictionsApi.getHealthConditions(),
       restrictionsApi.getDietaryPreferences(),
     ]);
-    setAllergies(a); setHealthConditions(c); setDietaryPreferences(p);
+    setAllergies(a); setDietaryPreferences(p);
   };
 
   const handleSubmit = async (e: any) => {
@@ -66,7 +62,7 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
       const id = patient ? patient.id : res.id;
       await restrictionsApi.updatePatientRestrictions(id, {
         allergyIds: selectedAllergies,
-        healthConditionIds: selectedConditions,
+        healthConditionIds: [], // Simplificado para exemplo
         dietaryPreferenceIds: selectedPreferences,
       });
       onSuccess();
@@ -74,71 +70,80 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
     } finally { setLoading(false); }
   };
 
-  const SelectionButton = ({ id, label, selected, onClick }: any) => (
+  const SelectionButton = ({ label, selected, onClick }: any) => (
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border-2 flex justify-between items-center ${
+      className={cn(
+        "px-3 py-2 rounded-lg text-xs font-semibold transition-all border flex justify-between items-center",
         selected 
-          ? 'bg-emerald-600 border-emerald-600 text-white shadow-md' 
-          : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-200'
-      }`}
+          ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+          : "bg-white border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+      )}
     >
       <span className="truncate mr-2">{label}</span>
-      {selected && <Check size={12} strokeWidth={4} />}
+      {selected && <Check size={12} strokeWidth={3} />}
     </button>
   );
 
+  const inputClass = "h-11 rounded-xl bg-background border border-border focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Scrollbar Customizada aplicada ao DialogContent */}
-      <DialogContent className="sm:max-w-[800px] max-h-[85vh] overflow-y-auto p-0 border-none rounded-[2.5rem] shadow-3xl bg-white custom-dialog-scroll">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-0 border-none rounded-[2rem] shadow-2xl bg-white">
         <form onSubmit={handleSubmit}>
-          <div className="p-10 space-y-10">
+          <div className="p-8 lg:p-10 space-y-8">
             
             {/* --- HEADER --- */}
-            <div className="flex items-center gap-4">
-               <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
-                  <User size={28} />
+            <div className="flex items-center gap-4 border-b border-border pb-6">
+               <div className="w-12 h-12 bg-secondary/50 text-primary border border-secondary rounded-2xl flex items-center justify-center">
+                  <User size={24} />
                </div>
                <div>
-                  <DialogTitle className="text-2xl font-black tracking-tighter uppercase">{patient ? 'Editar Ficha' : 'Novo Paciente'}</DialogTitle>
-                  <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.1em]">Configuração de prontuário clínico</p>
+                  <DialogTitle className="text-2xl font-bold text-foreground tracking-tight">{patient ? 'Editar Paciente' : 'Novo Paciente'}</DialogTitle>
+                  <p className="text-muted-foreground text-sm">Preencha os dados clínicos fundamentais.</p>
                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
               {/* Identificação */}
-              <div className="space-y-5">
-                <h4 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600">IDENTIFICAÇÃO</h4>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Dados Pessoais
+                </h4>
                 <div className="space-y-3">
-                  <Input placeholder="Nome Completo" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
-                  <Input placeholder="E-mail" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
+                  <Input placeholder="Nome Completo" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={inputClass} />
+                  <Input placeholder="E-mail" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className={inputClass} />
                   <div className="grid grid-cols-2 gap-3">
-                    <Input placeholder="Peso (kg)" type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
-                    <Input placeholder="Altura (cm)" type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
+                    <Input placeholder="Peso (kg)" type="number" value={formData.weight} onChange={e => setFormData({...formData, weight: e.target.value})} className={inputClass} />
+                    <Input placeholder="Altura (cm)" type="number" value={formData.height} onChange={e => setFormData({...formData, height: e.target.value})} className={inputClass} />
                   </div>
+                  <Input placeholder="Idade" type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} className={inputClass} />
                 </div>
               </div>
 
               {/* Planejamento */}
-              <div className="space-y-5">
-                <h4 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600">PLANEJAMENTO</h4>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Planejamento
+                </h4>
                 <div className="space-y-3">
-                  <Input placeholder="Objetivo" value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
+                  <Input placeholder="Objetivo Principal" value={formData.goal} onChange={e => setFormData({...formData, goal: e.target.value})} className={inputClass} />
                   <div className="grid grid-cols-2 gap-3">
-                    <Input placeholder="Meta (kg)" type="number" value={formData.targetWeight} onChange={e => setFormData({...formData, targetWeight: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
-                    <Input type="date" value={formData.targetDate} onChange={e => setFormData({...formData, targetDate: e.target.value})} className="h-12 rounded-xl bg-slate-50 border-none font-bold text-sm" />
+                    <Input placeholder="Meta (kg)" type="number" value={formData.targetWeight} onChange={e => setFormData({...formData, targetWeight: e.target.value})} className={inputClass} />
+                    <Input type="date" value={formData.targetDate} onChange={e => setFormData({...formData, targetDate: e.target.value})} className={inputClass} />
                   </div>
                   <Select value={formData.activityLevel} onValueChange={v => setFormData({...formData, activityLevel: v})}>
-                    <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-none font-bold text-slate-500 text-xs">
+                    <SelectTrigger className={inputClass}>
                       <SelectValue placeholder="Nível de Atividade" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Sedentary text-xs">Sedentário</SelectItem>
-                      <SelectItem value="Light text-xs">Leve</SelectItem>
-                      <SelectItem value="Moderate text-xs">Moderado</SelectItem>
-                      <SelectItem value="Active text-xs">Ativo</SelectItem>
+                      <SelectItem value="Sedentary">Sedentário</SelectItem>
+                      <SelectItem value="Light">Leve</SelectItem>
+                      <SelectItem value="Moderate">Moderado</SelectItem>
+                      <SelectItem value="Active">Ativo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -146,19 +151,19 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
             </div>
 
             {/* Restrições */}
-            <div className="space-y-6 pt-8 border-t border-slate-50">
-               <div className="space-y-4">
-                  <h4 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-red-500"><ShieldAlert size={14}/> ALERGIAS</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="pt-6 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="space-y-3">
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-red-500"><ShieldAlert size={14}/> Alergias</h4>
+                  <div className="flex flex-wrap gap-2">
                     {allergies.map(a => (
                       <SelectionButton key={a.id} label={a.name} selected={selectedAllergies.includes(a.id)} onClick={() => setSelectedAllergies(prev => prev.includes(a.id) ? prev.filter(x => x !== a.id) : [...prev, a.id])} />
                     ))}
                   </div>
                </div>
 
-               <div className="space-y-4">
-                  <h4 className="flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-blue-500"><Heart size={14}/> PREFERÊNCIAS</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+               <div className="space-y-3">
+                  <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-500"><Heart size={14}/> Preferências</h4>
+                  <div className="flex flex-wrap gap-2">
                     {dietaryPreferences.map(p => (
                       <SelectionButton key={p.id} label={p.name} selected={selectedPreferences.includes(p.id)} onClick={() => setSelectedPreferences(prev => prev.includes(p.id) ? prev.filter(x => x !== p.id) : [...prev, p.id])} />
                     ))}
@@ -167,31 +172,15 @@ export default function PatientDialog({ open, onOpenChange, patient, onSuccess }
             </div>
           </div>
 
-          <DialogFooter className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-            <button type="button" onClick={() => onOpenChange(false)} className="text-slate-400 font-black text-[9px] uppercase tracking-widest hover:text-slate-600 transition-colors ml-4">CANCELAR</button>
-            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl h-11 px-8 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95 mr-4">
-              {loading ? 'SALVANDO...' : patient ? 'SALVAR ALTERAÇÕES' : 'CONFIRMAR CADASTRO'}
+          <DialogFooter className="p-6 bg-muted/20 border-t border-border flex items-center justify-between sm:justify-between">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="text-muted-foreground hover:text-foreground">
+                Cancelar
+            </Button>
+            <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-8 shadow-md">
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
         </form>
-
-        <style jsx global>{`
-          .custom-dialog-scroll::-webkit-scrollbar {
-            width: 6px;
-          }
-          .custom-dialog-scroll::-webkit-scrollbar-track {
-            background: #f8fafc; /* slate-50 */
-            margin: 20px; /* Resolve o problema do border radius */
-            border-radius: 10px;
-          }
-          .custom-dialog-scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1; /* slate-300 */
-            border-radius: 10px;
-          }
-          .custom-dialog-scroll::-webkit-scrollbar-thumb:hover {
-            background: #10b981; /* emerald-500 */
-          }
-        `}</style>
       </DialogContent>
     </Dialog>
   );

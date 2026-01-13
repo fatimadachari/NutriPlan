@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { analyticsApi } from '@/lib/api/analytics';
 import {
   DashboardStats,
@@ -10,24 +9,26 @@ import {
   InactivePatient,
   BMIDistribution,
 } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   Users,
   FileText,
   Scale,
-  Activity,
   Target,
-  TrendingDown,
   TrendingUp,
-  AlertTriangle,
-  BarChart3,
+  AlertCircle,
+  Loader2,
+  CalendarDays,
+  ArrowRight,
   ChevronRight,
+  MoreHorizontal
 } from 'lucide-react';
 import PatientsByGoalChart from '@/components/dashboard/PatientsByGoalChart';
 import BMIDistributionChart from '@/components/dashboard/BMIDistributionChart';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export default function AnalyticsPage() {
   const router = useRouter();
@@ -39,195 +40,237 @@ export default function AnalyticsPage() {
   const [bmiDistribution, setBmiDistribution] = useState<BMIDistribution[]>([]);
 
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Simulando delay para ver o loading clean
+        const [statsData, goalData, progressData, inactiveData, bmiData] = await Promise.all([
+          analyticsApi.getDashboardStats(),
+          analyticsApi.getPatientsByGoal(),
+          analyticsApi.getTopProgress(5),
+          analyticsApi.getInactivePatients(30),
+          analyticsApi.getBMIDistribution(),
+        ]);
+        setStats(statsData);
+        setPatientsByGoal(goalData);
+        setTopProgress(progressData);
+        setInactivePatients(inactiveData);
+        setBmiDistribution(bmiData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const [statsData, goalData, progressData, inactiveData, bmiData] = await Promise.all([
-        analyticsApi.getDashboardStats(),
-        analyticsApi.getPatientsByGoal(),
-        analyticsApi.getTopProgress(5),
-        analyticsApi.getInactivePatients(30),
-        analyticsApi.getBMIDistribution(),
-      ]);
-
-      setStats(statsData);
-      setPatientsByGoal(goalData);
-      setTopProgress(progressData);
-      setInactivePatients(inactiveData);
-      setBmiDistribution(bmiData);
-    } catch (error) {
-      console.error('Erro ao carregar analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
-        <p className="text-emerald-600 font-black text-[10px] uppercase tracking-widest">Sincronizando Inteligência...</p>
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center gap-4 min-h-[60vh]">
+        <div className="p-4 rounded-full bg-secondary/50 animate-pulse">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        </div>
+        <p className="text-sm text-muted-foreground font-medium">Carregando dados...</p>
       </div>
     );
   }
 
-  return (
-    <div className="p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="h-1.5 w-10 bg-emerald-500 rounded-full mb-3"></div>
-          <h1 className="text-4xl font-black tracking-tighter text-slate-900 uppercase">Analytics</h1>
-          <p className="text-slate-500 font-medium">Desempenho e métricas do seu consultório digital</p>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-2xl border border-emerald-100">
-          <Activity size={16} className="text-emerald-500" />
-          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest italic">Dados em tempo real</span>
-        </div>
-      </div>
-
-      {/* MÉTRICAS DE IMPACTO (GRID 3x2) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[
-          { label: 'Base de Pacientes', value: stats?.totalPatients, sub: `${stats?.activePatientsThisMonth} ativos este mês`, icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
-          { label: 'Planejamentos', value: stats?.totalDiets, sub: 'Dietas prescritas', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Medições Realizadas', value: stats?.totalWeightMeasurements, sub: 'Registros antropométricos', icon: Scale, color: 'text-purple-500', bg: 'bg-purple-50' },
-          { label: 'Avaliações Biométricas', value: stats?.totalBodyMeasurements, sub: 'Históricos de composição', icon: BarChart3, color: 'text-orange-500', bg: 'bg-orange-50' },
-          { label: 'Foco em Resultados', value: stats?.patientsWithGoals, sub: 'Pacientes com metas ativas', icon: Target, color: 'text-red-500', bg: 'bg-red-50' },
-          { label: 'Atenção Necessária', value: inactivePatients.length, sub: 'Sem retorno há +30 dias', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50', urgent: inactivePatients.length > 0 }
-        ].map((item, i) => (
-          <Card key={i} className={`rounded-[2rem] border-none shadow-sm transition-all hover:shadow-xl ${item.urgent ? 'ring-2 ring-amber-200' : ''}`}>
-            <CardContent className="p-7 flex items-center gap-5">
-              <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center ${item.color} shrink-0`}>
-                <item.icon size={28} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
-                <p className={`text-3xl font-black text-slate-800 tracking-tighter ${item.urgent ? 'text-amber-600' : ''}`}>{item.value || 0}</p>
-                <p className="text-[11px] font-bold text-slate-500 italic mt-0.5">{item.sub}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* DISTRIBUIÇÕES VISUAIS */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="rounded-[3rem] border-none shadow-sm bg-white p-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-6 w-1 bg-blue-500 rounded-full"></div>
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Pacientes por Objetivo</h3>
+  // Card KPI Clean e Minimalista
+  const KpiCard = ({ label, value, sub, icon: Icon }: any) => (
+    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col justify-between h-full">
+       <div className="flex justify-between items-start mb-4">
+          <div className="p-3 bg-secondary rounded-xl text-primary">
+             <Icon size={20} />
           </div>
-          <div className="h-[300px]">
+          {/* Badge opcional de variação */}
+          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+             +2.5% este mês
+          </span>
+       </div>
+       <div>
+           <h3 className="text-3xl font-bold text-foreground tracking-tight">{value || 0}</h3>
+           <p className="text-sm font-medium text-muted-foreground mt-1">{label}</p>
+       </div>
+       <div className="mt-4 pt-4 border-t border-dashed border-border">
+           <p className="text-xs text-muted-foreground">{sub}</p>
+       </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background space-y-8 pb-20">
+      
+      {/* --- HEADER --- */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Visão Geral</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Bem-vindo ao seu painel de controle nutricional.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-sm font-medium text-muted-foreground shadow-sm">
+                <CalendarDays size={16} />
+                <span>{format(new Date(), "d 'de' MMMM, yyyy", { locale: ptBR })}</span>
+            </div>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md rounded-xl h-11 px-6">
+                Novo Paciente
+            </Button>
+        </div>
+      </div>
+
+      {/* --- KPIS PRINCIPAIS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KpiCard 
+           label="Total de Pacientes" 
+           value={stats?.totalPatients} 
+           sub={`${stats?.activePatientsThisMonth || 0} ativos recentemente`} 
+           icon={Users} 
+        />
+        <KpiCard 
+           label="Planos Alimentares" 
+           value={stats?.totalDiets} 
+           sub="Prescrições vigentes" 
+           icon={FileText} 
+        />
+        <KpiCard 
+           label="Medições Realizadas" 
+           value={stats?.totalWeightMeasurements} 
+           sub="Histórico antropométrico" 
+           icon={Scale} 
+        />
+        <KpiCard 
+           label="Metas Ativas" 
+           value={stats?.patientsWithGoals} 
+           sub="Objetivos em andamento" 
+           icon={Target} 
+        />
+      </div>
+
+      {/* --- SEÇÃO DE GRÁFICOS (BACKGROUND BRANCO PURO) --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Objetivos (Ocupa 2 colunas) */}
+        <div className="lg:col-span-2 bg-white border border-border rounded-3xl p-6 lg:p-8 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Objetivos Clínicos</h3>
+              <p className="text-sm text-muted-foreground">Distribuição da base de pacientes por meta.</p>
+            </div>
+            <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <MoreHorizontal size={20} />
+            </Button>
+          </div>
+          <div className="h-[300px] w-full">
             <PatientsByGoalChart data={patientsByGoal} />
           </div>
-        </Card>
+        </div>
 
-        <Card className="rounded-[3rem] border-none shadow-sm bg-white p-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="h-6 w-1 bg-emerald-500 rounded-full"></div>
-            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Distribuição de IMC</h3>
-          </div>
-          <div className="h-[300px]">
-            <BMIDistributionChart data={bmiDistribution} />
-          </div>
-        </Card>
+        {/* IMC (Ocupa 1 coluna) */}
+        <div className="bg-white border border-border rounded-3xl p-6 lg:p-8 shadow-sm flex flex-col">
+           <div className="mb-8">
+              <h3 className="text-lg font-semibold text-foreground">Raio-X da Saúde</h3>
+              <p className="text-sm text-muted-foreground">Classificação por IMC.</p>
+           </div>
+           <div className="flex-1 min-h-[250px] w-full relative">
+              <BMIDistributionChart data={bmiDistribution} />
+           </div>
+        </div>
       </div>
 
-      {/* RANKING DE PERFORMANCE & ALERTAS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* --- LISTAS DE PERFORMANCE --- */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
-        {/* TOP PROGRESSO */}
-        <Card className="lg:col-span-7 rounded-[3rem] border-none shadow-sm bg-white overflow-hidden">
-          <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <TrendingDown className="text-emerald-500" size={24} />
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter italic">Top Performance (Evolução)</h3>
-            </div>
+        {/* Top Performance */}
+        <div className="xl:col-span-2 bg-white border border-border rounded-3xl shadow-sm overflow-hidden">
+          <div className="p-6 lg:p-8 border-b border-border flex justify-between items-center">
+             <div className="flex items-center gap-3">
+               <div className="p-2 bg-secondary rounded-lg text-primary">
+                 <TrendingUp size={18} />
+               </div>
+               <div>
+                  <h3 className="text-base font-semibold text-foreground">Maiores Evoluções</h3>
+                  <p className="text-sm text-muted-foreground">Pacientes com resultados expressivos.</p>
+               </div>
+             </div>
+             <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-medium" onClick={() => router.push('/dashboard/patients')}>
+                Ver todos
+             </Button>
           </div>
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {topProgress.map((patient) => (
-                <div
-                  key={patient.patientId}
-                  className="group flex items-center justify-between p-5 bg-slate-50/50 rounded-2xl hover:bg-emerald-50 transition-all border border-transparent hover:border-emerald-100 cursor-pointer"
-                  onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center font-black text-emerald-600 shadow-sm group-hover:rotate-6 transition-transform">
-                      {patient.patientName.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-black text-slate-800 uppercase tracking-tight">{patient.patientName}</p>
-                      <p className="text-[11px] font-bold text-slate-400 italic">
-                        {patient.initialWeight.toFixed(1)}kg → {patient.currentWeight.toFixed(1)}kg 
-                        <span className="ml-2 bg-white px-2 py-0.5 rounded-full not-italic">⏱ {patient.daysSinceStart} dias</span>
-                      </p>
-                    </div>
+          
+          <div className="divide-y divide-border">
+            {topProgress.map((patient, i) => (
+              <div key={i} onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)} className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors cursor-pointer group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-bold text-primary text-sm border border-secondary">
+                    {patient.patientName.charAt(0)}
                   </div>
-                  <div className="text-right">
-                    <div className={`flex items-center gap-1 font-black text-sm ${patient.weightChange < 0 ? 'text-emerald-600' : 'text-orange-500'}`}>
-                      {patient.weightChange < 0 ? <TrendingDown size={18} /> : <TrendingUp size={18} />}
-                      {patient.weightChange > 0 ? '+' : ''}{patient.weightChange.toFixed(1)}kg
+                  <div>
+                    <p className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{patient.patientName}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                      <span>{patient.initialWeight}kg</span>
+                      <ArrowRight size={12} className="text-primary/60" />
+                      <span className="font-medium text-foreground">{patient.currentWeight}kg</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{patient.weeklyAverage.toFixed(2)}kg/sem</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div className="text-right">
+                  <span className={cn(
+                      "inline-flex items-center gap-1 font-bold text-sm px-2.5 py-0.5 rounded-full",
+                      patient.weightChange < 0 
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100" 
+                        : "bg-amber-50 text-amber-700 border border-amber-100"
+                  )}>
+                      {Math.abs(patient.weightChange).toFixed(1)}kg
+                  </span>
+                  <p className="text-[10px] text-muted-foreground mt-1 font-medium">{patient.daysSinceStart} dias</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* PACIENTES INATIVOS */}
-        <Card className="lg:col-span-5 rounded-[3rem] border-none shadow-sm bg-white overflow-hidden border-t-4 border-t-amber-400">
-          <div className="p-8 border-b border-slate-50">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="text-amber-500" size={24} />
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter italic">Zona de Risco</h3>
+        {/* Risco / Inativos */}
+        <div className="bg-white border border-border rounded-3xl shadow-sm overflow-hidden h-fit">
+          <div className="p-6 lg:p-8 border-b border-border flex items-center gap-3">
+            <div className="p-2 bg-red-50 rounded-lg text-red-600 border border-red-100">
+              <AlertCircle size={18} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Retenção de Pacientes</p>
+            <div>
+               <h3 className="text-base font-semibold text-foreground">Alerta de Abandono</h3>
+               <p className="text-sm text-muted-foreground">Ausentes há +30 dias.</p>
+            </div>
           </div>
-          <CardContent className="p-6">
-            <div className="space-y-3">
-              {inactivePatients.slice(0, 5).map((patient) => (
-                <div
-                  key={patient.patientId}
-                  className="flex items-center justify-between p-4 bg-amber-50/50 rounded-2xl hover:bg-amber-100 transition-all border border-transparent hover:border-amber-200 cursor-pointer group"
-                  onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-black text-amber-600 shadow-sm">
-                      <Scale size={18} />
-                    </div>
-                    <div>
-                      <p className="font-black text-slate-700 uppercase tracking-tighter text-sm">{patient.patientName}</p>
-                      <p className="text-[10px] font-bold text-slate-400 italic">
-                        Última: {patient.lastWeightMeasurement ? format(new Date(patient.lastWeightMeasurement), "dd/MM/yy") : 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-black text-amber-600 tracking-tighter text-lg leading-none">
-                      {patient.daysSinceLastMeasurement}
-                    </p>
-                    <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest">Dias inativo</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {inactivePatients.length > 5 && (
-              <Button 
-                variant="ghost" 
-                className="w-full mt-4 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-400 hover:text-amber-600"
-              >
-                Ver todos os +{inactivePatients.length - 5} pacientes <ChevronRight size={14} />
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+          
+          <div className="divide-y divide-border">
+             {inactivePatients.slice(0, 5).map((patient, i) => (
+                 <div key={i} onClick={() => router.push(`/dashboard/patients/${patient.patientId}`)} className="flex items-center justify-between p-4 hover:bg-red-50/30 transition-colors cursor-pointer">
+                     <div className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                             <CalendarDays size={14} />
+                         </div>
+                         <div>
+                             <p className="font-medium text-foreground text-xs">{patient.patientName}</p>
+                             <p className="text-[10px] text-muted-foreground">
+                                 {patient.lastWeightMeasurement ? `Última: ${format(new Date(patient.lastWeightMeasurement), "dd/MM")}` : 'Sem dados'}
+                             </p>
+                         </div>
+                     </div>
+                     <span className="text-xs font-semibold text-red-600 bg-white border border-red-100 shadow-sm px-2 py-1 rounded-md">
+                         {patient.daysSinceLastMeasurement}d
+                     </span>
+                 </div>
+             ))}
+             {inactivePatients.length === 0 && (
+                 <div className="p-8 text-center text-muted-foreground text-sm">Base de pacientes 100% ativa!</div>
+             )}
+          </div>
+          <div className="p-4 bg-muted/20 border-t border-border">
+             <Button variant="outline" className="w-full text-xs h-9 bg-white hover:bg-muted" onClick={() => router.push('/dashboard/patients?filter=inactive')}>
+                Gerenciar Inativos
+             </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
