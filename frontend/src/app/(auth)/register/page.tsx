@@ -1,52 +1,51 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthActions } from '@/hooks/use-auth.hook';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordStrength } from '@/components/features/password-strength';
+import { validatePassword } from '@/utils/password-validator';
 import Link from 'next/link';
-import { Loader2, ArrowRight, Leaf, Lock, Mail, User, FileBadge } from 'lucide-react';
+import { Loader2, ArrowRight, Leaf, Lock, Mail, User, FileBadge, Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loading, error, setError } = useAuthActions();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [crn, setCrn] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+    setError(null);
 
-    try {
-      await register({ fullName, email, password, crn });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar conta. Verifique os dados.');
-    } finally {
-      setLoading(false);
+    // Validar senha antes de enviar
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError('Senha não atende aos requisitos de segurança');
+      return;
     }
+
+    await register({ fullName, email, password, crn });
   };
 
-  // Estilo padrão dos inputs (igual ao Login)
-  const inputClasses = "pl-10 h-11 bg-muted/30 border-input transition-all focus:bg-background focus:ring-2 focus:ring-primary/20";
+  const inputClasses = "h-11 bg-muted/30 border-input transition-all focus:bg-background focus:ring-2 focus:ring-primary/20";
   const iconClasses = "absolute left-3 top-3 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors";
 
   return (
     <div className="min-h-screen w-full flex bg-background">
       
-      {/* --- LADO ESQUERDO: VISUAL BRANDING (IDÊNTICO AO LOGIN) --- */}
+      {/* LADO ESQUERDO: BRANDING */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden flex-col justify-between p-16 text-primary-foreground">
-        {/* Background Orgânico Abstrato (CSS Only) */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white rounded-full mix-blend-overlay blur-3xl -translate-y-1/2 translate-x-1/3"></div>
            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-400 rounded-full mix-blend-overlay blur-3xl translate-y-1/3 -translate-x-1/3"></div>
         </div>
 
-        {/* Logo/Header */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
             <Leaf className="w-5 h-5 text-white" />
@@ -54,7 +53,6 @@ export default function RegisterPage() {
           <span className="text-xl font-semibold tracking-tight">NutriPlan</span>
         </div>
 
-        {/* TEXTOS ALTERADOS PARA REGISTRO */}
         <div className="relative z-10 max-w-lg">
           <h1 className="text-5xl font-light leading-tight mb-6">
             Comece sua <br />
@@ -65,7 +63,6 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Footer da imagem */}
         <div className="relative z-10 flex items-center gap-4 text-xs font-medium text-primary-foreground/60 uppercase tracking-widest">
           <span>Software para Nutricionistas</span>
           <div className="h-px w-8 bg-white/30"></div>
@@ -73,19 +70,17 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* --- LADO DIREITO: FORMULÁRIO DE REGISTRO --- */}
+      {/* LADO DIREITO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-background relative overflow-y-auto">
         <div className="w-full max-w-[420px] space-y-8 py-8">
           
           <div className="text-center lg:text-left">
-             {/* Mobile Logo */}
             <div className="flex lg:hidden justify-center mb-6">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                 <Leaf className="w-6 h-6" />
               </div>
             </div>
 
-            {/* TEXTOS DO CABEÇALHO DO FORMULÁRIO */}
             <h2 className="text-3xl font-semibold text-foreground tracking-tight">Crie sua conta profissional</h2>
             <p className="text-muted-foreground mt-2 text-sm">
               Preencha os dados abaixo para iniciar.
@@ -101,7 +96,6 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* CAMPOS DO REGISTRO (Estilo idêntico ao login) */}
             <div className="space-y-4">
               
               {/* Nome Completo */}
@@ -112,7 +106,7 @@ export default function RegisterPage() {
                   <Input 
                     id="fullName" 
                     placeholder="Ex: Dr. João Silva" 
-                    className={inputClasses}
+                    className={`pl-10 ${inputClasses}`}
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
@@ -120,56 +114,72 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Grid para Email e CRN */}
+              {/* Email e CRN */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
-                    <div className="relative group">
+                  <Label htmlFor="email">E-mail</Label>
+                  <div className="relative group">
                     <Mail className={iconClasses} />
                     <Input 
-                        id="email" 
-                        type="email" 
-                        placeholder="seu@email.com" 
-                        className={inputClasses}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
+                      id="email" 
+                      type="email" 
+                      placeholder="seu@email.com" 
+                      className={`pl-10 ${inputClasses}`}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
-                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="crn">CRN</Label>
-                    <div className="relative group">
+                  <Label htmlFor="crn">CRN</Label>
+                  <div className="relative group">
                     <FileBadge className={iconClasses} />
                     <Input 
-                        id="crn" 
-                        placeholder="0000/UF" 
-                        className={inputClasses}
-                        value={crn}
-                        onChange={(e) => setCrn(e.target.value)}
-                        required
+                      id="crn" 
+                      placeholder="12345/SP" 
+                      className={`pl-10 ${inputClasses}`}
+                      value={crn}
+                      onChange={(e) => setCrn(e.target.value.toUpperCase())}
+                      required
                     />
-                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Senha */}
+              {/* Senha com Toggle de Visibilidade */}
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
                 <div className="relative group">
                   <Lock className={iconClasses} />
                   <Input 
                     id="password" 
-                    type="password" 
-                    placeholder="Mínimo 6 caracteres" 
-                    className={inputClasses}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Crie uma senha segura" 
+                    className={`pl-10 pr-10 ${inputClasses}`}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
                     required
-                    minLength={6}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
                 </div>
               </div>
+
+              {/* Indicador de Força da Senha */}
+              <PasswordStrength password={password} show={passwordFocused || password.length > 0} />
             </div>
 
             <Button 
@@ -189,7 +199,6 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          {/* DIVISOR E LINK ALTERNATIVO */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
@@ -210,7 +219,6 @@ export default function RegisterPage() {
             </Link>
           </div>
 
-          {/* Rodapé discreto */}
           <p className="text-center text-[10px] text-muted-foreground mt-8">
             Ao se cadastrar, você concorda com nossos Termos de Uso e Política de Privacidade.
           </p>

@@ -16,22 +16,35 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var result = await _authService.RegisterAsync(dto);
-        if (result == null)
-            return BadRequest(new { message = "Email já cadastrado ou erro ao criar usuário" });
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        return Ok(result);
+        var result = await _authService.RegisterAsync(dto);
+
+        if (!result.Success)
+        {
+            if (result.Errors != null)
+                return BadRequest(new { errors = result.Errors });
+
+            return BadRequest(new { message = result.Error });
+        }
+
+        return Ok(result.Data);
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var result = await _authService.LoginAsync(dto);
-        if (result == null)
-            return Unauthorized(new { message = "Email ou senha inválidos" });
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        return Ok(result);
+        var result = await _authService.LoginAsync(dto);
+
+        if (!result.Success)
+            return Unauthorized(new { message = result.Error });
+
+        return Ok(result.Data);
     }
 }

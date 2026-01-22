@@ -1,9 +1,6 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using NutriPlan.Application.Common;
 using NutriPlan.Application.DTOs.Auth;
 using NutriPlan.Application.Interfaces;
 using NutriPlan.Domain.Entities;
@@ -15,21 +12,24 @@ namespace NutriPlan.Infrastructure.Services;
 public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IConfiguration _configuration;
     private readonly AppDbContext _context;
+    private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-    public AuthService(UserManager<ApplicationUser> userManager, IConfiguration configuration, AppDbContext context)
+    public AuthService(
+        UserManager<ApplicationUser> userManager,
+        AppDbContext context,
+        IJwtTokenGenerator jwtTokenGenerator)
     {
         _userManager = userManager;
-        _configuration = configuration;
         _context = context;
+        _jwtTokenGenerator = jwtTokenGenerator;
     }
 
-    public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
+    public async Task<Result<AuthResponseDto>> RegisterAsync(RegisterDto dto)
     {
         var existingUser = await _userManager.FindByEmailAsync(dto.Email);
         if (existingUser != null)
-            return null;
+            return Result<AuthResponseDto>.Fail("Email já cadastrado");
 
         var user = new ApplicationUser
         {
@@ -42,65 +42,55 @@ public class AuthService : IAuthService
 
         var result = await _userManager.CreateAsync(user, dto.Password);
         if (!result.Succeeded)
-            return null;
+        {
+            var errors = result.Errors.ToDictionary(
+                e => e.Code,
+                e => new[] { e.Description }
+            );
+            return Result<AuthResponseDto>.Fail(errors);
+        }
 
-        // Criar Nutritionist correspondente
         var nutritionist = new Nutritionist(dto.FullName, dto.Email, dto.CRN);
         typeof(Nutritionist).GetProperty("Id")!.SetValue(nutritionist, user.Id);
 
         await _context.Nutritionists.AddAsync(nutritionist);
         await _context.SaveChangesAsync();
 
-        return await GenerateTokenAsync(user);
+        var authResponse = GenerateAuthResponse(user);
+        return Result<AuthResponseDto>.Ok(authResponse);
     }
 
-    public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
+    public async Task<Result<AuthResponseDto>> LoginAsync(LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
-            return null;
+            return Result<AuthResponseDto>.Fail("Credenciais inválidas");
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
         if (!isPasswordValid)
-            return null;
+            return Result<AuthResponseDto>.Fail("Credenciais inválidas");
 
-        return await GenerateTokenAsync(user);
+        var authResponse = GenerateAuthResponse(user);
+        return Result<AuthResponseDto>.Ok(authResponse);
     }
 
-    private Task<AuthResponseDto> GenerateTokenAsync(ApplicationUser user)
+    private AuthResponseDto GenerateAuthResponse(ApplicationUser user)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey não configurada");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
-            new(ClaimTypes.Name, user.FullName),
-            new("crn", user.CRN)
-        };
-
-        var expiresAt = DateTime.UtcNow.AddHours(double.Parse(jwtSettings["ExpirationInHours"] ?? "24"));
-
-        var token = new JwtSecurityToken(
-            issuer: jwtSettings["Issuer"],
-            audience: jwtSettings["Audience"],
-            claims: claims,
-            expires: expiresAt,
-            signingCredentials: credentials
+        var token = _jwtTokenGenerator.GenerateToken(
+            user.Id,
+            user.Email ?? string.Empty,
+            user.FullName,
+            user.CRN
         );
+        var expiresAt = _jwtTokenGenerator.GetTokenExpiration();
 
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return Task.FromResult(new AuthResponseDto
+        return new AuthResponseDto
         {
-            Token = tokenString,
+            Token = token,
             Email = user.Email ?? string.Empty,
             FullName = user.FullName,
             UserId = user.Id,
             ExpiresAt = expiresAt
-        });
+        };
     }
 }
