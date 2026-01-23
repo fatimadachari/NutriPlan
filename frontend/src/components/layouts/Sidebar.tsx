@@ -1,6 +1,7 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth.context";
+import { useAuthActions } from "@/hooks/use-auth.hook";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,43 +13,35 @@ import {
   Leaf,
   CalendarDays,
   Utensils,
-  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const { logout } = useAuthActions();
   const pathname = usePathname();
 
   const navItems = [
     { href: "/dashboard", label: "Visão Geral", icon: LayoutDashboard },
     { href: "/dashboard/patients", label: "Meus Pacientes", icon: Users },
     { href: "/dashboard/schedule", label: "Agenda", icon: CalendarDays },
-    {
-      href: "/dashboard/meal-plans",
-      label: "Planos Alimentares",
-      icon: Utensils,
-    },
+    { href: "/dashboard/meal-plans", label: "Planos Alimentares", icon: Utensils },
     { href: "/dashboard/analytics", label: "Relatórios", icon: BarChart3 },
     { href: "/dashboard/settings", label: "Configurações", icon: Settings },
   ];
 
   return (
-    // CONTAINER PRINCIPAL
-    // Usamos 'bg-primary' para garantir o mesmo Verde Floresta do Login.
-    // 'text-primary-foreground' garante o contraste correto (branco/off-white).
     <aside className="w-72 h-screen fixed left-0 top-0 bg-primary text-primary-foreground flex flex-col z-50 shadow-2xl border-r border-white/10 transition-all duration-300 overflow-hidden">
-      {/* --- BACKGROUND VISUAL (IDÊNTICO AO LOGIN) --- */}
-      {/* Isso cria a continuidade da marca, trazendo as "luzes" orgânicas para o menu */}
+      
+      {/* BACKGROUND VISUAL */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div className="absolute top-[-10%] right-[-50%] w-[500px] h-[500px] bg-white rounded-full mix-blend-overlay blur-3xl opacity-50"></div>
         <div className="absolute bottom-[-10%] left-[-20%] w-[400px] h-[400px] bg-emerald-400 rounded-full mix-blend-overlay blur-3xl opacity-40"></div>
       </div>
 
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <div className="p-8 relative z-10">
         <div className="flex items-center gap-3">
-          {/* Logo Glassmorphism (Reutilizado do Login) */}
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-lg">
             <Leaf className="w-5 h-5 text-white" />
           </div>
@@ -63,7 +56,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* --- NAVEGAÇÃO --- */}
+      {/* NAVEGAÇÃO */}
       <nav className="flex-1 px-4 space-y-2 relative z-10 overflow-y-auto py-4 scrollbar-hide">
         <p className="px-4 text-[10px] font-bold text-primary-foreground/40 uppercase tracking-widest mb-3">
           Menu Principal
@@ -79,8 +72,8 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 group relative border",
                   isActive
-                    ? "bg-white/15 border-white/10 text-white shadow-sm backdrop-blur-sm" // Estado Ativo: Vidro fosco claro
-                    : "border-transparent text-primary-foreground/70 hover:bg-white/10 hover:text-white" // Estado Inativo: Transparente
+                    ? "bg-white/15 border-white/10 text-white shadow-sm backdrop-blur-sm"
+                    : "border-transparent text-primary-foreground/70 hover:bg-white/10 hover:text-white"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -88,9 +81,7 @@ export default function Sidebar() {
                     size={18}
                     className={cn(
                       "transition-colors",
-                      isActive
-                        ? "text-emerald-200"
-                        : "group-hover:text-emerald-200"
+                      isActive ? "text-emerald-200" : "group-hover:text-emerald-200"
                     )}
                   />
                   <span className="text-sm font-medium tracking-wide">
@@ -98,7 +89,6 @@ export default function Sidebar() {
                   </span>
                 </div>
 
-                {/* Indicador de Ativo (Pequeno brilho lateral) */}
                 {isActive && (
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-200 shadow-[0_0_8px_rgba(167,243,208,0.5)]" />
                 )}
@@ -108,10 +98,9 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* --- RODAPÉ / PERFIL --- */}
+      {/* RODAPÉ / PERFIL */}
       <div className="p-4 border-t border-white/10 relative z-10 bg-black/10 backdrop-blur-md">
         <div className="flex items-center gap-3 p-2 rounded-2xl hover:bg-white/5 transition-colors group cursor-pointer">
-          {/* Avatar com Gradiente */}
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-200 to-teal-300 flex items-center justify-center text-primary font-bold shadow-lg ring-2 ring-white/10">
             {user?.fullName?.charAt(0) || "D"}
           </div>
