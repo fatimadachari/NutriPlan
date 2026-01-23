@@ -10,6 +10,17 @@ O NutriPlan resolve a dor de calcular calorias e macronutrientes manualmente. Nu
 - Visualizar cálculos de Kcal/Macros em tempo real
 - Gerar PDFs profissionais para entregar aos pacientes
 
+## 📸 Screenshots
+
+### Tela de Login
+![Login](docs/screenshots/login.png)
+
+### Dashboard Geral
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Dashboard do Paciente
+![Dashboard](docs/screenshots/dashboard-paciente.png)
+
 ## 🚀 Stack Tecnológica
 
 ### Backend
